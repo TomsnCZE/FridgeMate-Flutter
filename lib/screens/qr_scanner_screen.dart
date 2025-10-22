@@ -56,10 +56,13 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Skenovat QR kód'),
-        backgroundColor: const Color.fromARGB(255, 254, 215, 97),
+        backgroundColor: const Color(0xFFEC9B05),
       ),
       body: Stack(
         children: [
@@ -96,7 +99,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: isDarkMode 
+                    ? Colors.grey[900]!.withOpacity(0.9)
+                    : Colors.white.withOpacity(0.9),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
@@ -107,7 +112,10 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                   if (_lastScannedCode != null)
                     Text(
                       'Poslední kód: $_lastScannedCode',
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   const SizedBox(height: 12),

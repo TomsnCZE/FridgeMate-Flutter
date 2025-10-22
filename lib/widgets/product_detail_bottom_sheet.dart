@@ -14,6 +14,9 @@ class ProductDetailBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    
     final isExpired = product.expirationDate != null &&
         product.expirationDate!.isBefore(DateTime.now());
     
@@ -30,9 +33,9 @@ class ProductDetailBottomSheet extends StatelessWidget {
     final location = product.extra?['location'] ?? product.category;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
         ),
@@ -46,15 +49,16 @@ class ProductDetailBottomSheet extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Detail produktu',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.close),
+                icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
@@ -69,7 +73,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
               height: 120,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: Colors.grey[100],
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[100],
               ),
               child: hasImage
                   ? ClipRRect(
@@ -83,11 +87,11 @@ class ProductDetailBottomSheet extends StatelessWidget {
                               product.imageUrl!,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                return _buildNoImagePlaceholder();
+                                return _buildNoImagePlaceholder(isDarkMode);
                               },
                             ),
                     )
-                  : _buildNoImagePlaceholder(),
+                  : _buildNoImagePlaceholder(isDarkMode),
             ),
           ),
 
@@ -97,9 +101,10 @@ class ProductDetailBottomSheet extends StatelessWidget {
           Center(
             child: Text(
               product.name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
@@ -112,7 +117,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
                 product.brand!,
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey[600],
+                  color: theme.hintColor,
                 ),
               ),
             ),
@@ -124,18 +129,21 @@ class ProductDetailBottomSheet extends StatelessWidget {
             icon: Icons.category,
             title: 'Kategorie',
             value: product.category,
+            theme: theme,
           ),
 
           _buildInfoSection(
             icon: Icons.location_on,
             title: 'Umístění',
             value: location,
+            theme: theme,
           ),
 
           _buildInfoSection(
             icon: Icons.fastfood,
             title: 'Typ produktu',
             value: type,
+            theme: theme,
           ),
 
           // DATUM SPOTŘEBY
@@ -146,12 +154,14 @@ class ProductDetailBottomSheet extends StatelessWidget {
               value: _formatDate(product.expirationDate!),
               isWarning: isExpired || isExpiringSoon,
               warningText: isExpired ? 'PROŠLÉ' : (isExpiringSoon ? 'BRZY EXPIRUJE' : null),
+              theme: theme,
             )
           else
             _buildInfoSection(
               icon: Icons.calendar_today,
               title: 'Datum spotřeby',
               value: 'Neuvedeno',
+              theme: theme,
             ),
 
           // KALORIE
@@ -159,24 +169,26 @@ class ProductDetailBottomSheet extends StatelessWidget {
             icon: Icons.local_fire_department,
             title: 'Kalorie',
             value: calories != null ? '$calories kcal/100g' : 'Neuvedeno',
+            theme: theme,
           ),
 
           const SizedBox(height: 16),
 
           // SLOŽENÍ
-          const Text(
+          Text(
             'Složení:',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             ingredients ?? 'Neuvedeno',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Colors.black87,
+              color: theme.colorScheme.onSurface.withOpacity(0.8),
             ),
           ),
 
@@ -188,7 +200,9 @@ class ProductDetailBottomSheet extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isExpired ? Colors.red[50] : Colors.orange[50],
+                color: isExpired 
+                    ? Colors.red[isDarkMode ? 900 : 50] 
+                    : Colors.orange[isDarkMode ? 900 : 50],
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isExpired ? Colors.red : Colors.orange,
@@ -220,15 +234,21 @@ class ProductDetailBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildNoImagePlaceholder() {
+  Widget _buildNoImagePlaceholder(bool isDarkMode) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.photo_camera, size: 40, color: Colors.grey[400]),
+        Icon(
+          Icons.photo_camera, 
+          size: 40, 
+          color: isDarkMode ? Colors.grey[600] : Colors.grey[400]
+        ),
         const SizedBox(height: 8),
         Text(
           'Žádná fotka',
-          style: TextStyle(color: Colors.grey[500]),
+          style: TextStyle(
+            color: isDarkMode ? Colors.grey[600] : Colors.grey[500]
+          ),
         ),
       ],
     );
@@ -238,6 +258,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
     required IconData icon,
     required String title,
     required String value,
+    required ThemeData theme,
     bool isWarning = false,
     String? warningText,
   }) {
@@ -249,7 +270,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
           Icon(
             icon,
             size: 20,
-            color: isWarning ? Colors.orange : Colors.grey[600],
+            color: isWarning ? Colors.orange : theme.hintColor,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -260,7 +281,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
                   title,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: theme.hintColor,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -271,7 +292,9 @@ class ProductDetailBottomSheet extends StatelessWidget {
                         value,
                         style: TextStyle(
                           fontSize: 16,
-                          color: isWarning ? Colors.orange : Colors.black87,
+                          color: isWarning 
+                              ? Colors.orange 
+                              : theme.colorScheme.onSurface,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

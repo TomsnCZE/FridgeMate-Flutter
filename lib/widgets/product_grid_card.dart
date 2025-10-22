@@ -20,8 +20,7 @@ class ProductGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final expDate = product.expirationDate;
     final expirationStatus = _getExpirationStatus(expDate);
 
@@ -48,8 +47,19 @@ class ProductGridCard extends StatelessWidget {
 
     return Dismissible(
       key: Key('grid_product_$index'),
-      direction: DismissDirection.endToStart,
+      direction: DismissDirection.horizontal,
       background: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.blue,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.only(left: 20),
+        child: const Icon(Icons.edit, color: Colors.white, size: 30),
+      ),
+      secondaryBackground: Container(
+        margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.red,
           borderRadius: BorderRadius.circular(16),
@@ -59,158 +69,185 @@ class ProductGridCard extends StatelessWidget {
         child: const Icon(Icons.delete, color: Colors.white, size: 30),
       ),
       confirmDismiss: (direction) async {
-        return await _showDeleteConfirmation(context, product.name);
+        if (direction == DismissDirection.endToStart) {
+          return await _showDeleteConfirmation(context, product.name);
+        } else if (direction == DismissDirection.startToEnd) {
+          onEdit();
+          return false;
+        }
+        return false;
       },
-      onDismissed: (direction) => onDelete(),
+      onDismissed: (direction) {
+        if (direction == DismissDirection.endToStart) {
+          onDelete();
+        }
+      },
       child: GestureDetector(
         onTap: onTap,
-        onLongPress: onEdit,
         child: Card(
           margin: const EdgeInsets.all(8),
           elevation: 2,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          color: isDark ? Colors.grey[850] : Colors.white,
-          child: Stack(
-            children: [
-              Column(
+          color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 255, 250, 234),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: _getBorderForExpirationStatus(expirationStatus), // ← PŘIDÁNO OH RANČENÍ
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Fotka - středově zarovnaná s okraji
+                  // Fotka
                   Container(
-                    height: 70,
-                    margin: const EdgeInsets.fromLTRB(40, 16, 40, 8), // Stejné okraje zleva i zprava
+                    height: 80,
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 8),
                     child: _buildProductImage(typeIcon, typeColor, localImagePath),
                   ),
                   
                   // Čára
                   Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    height: 3,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
                       color: _getColorForExpirationStatus(expirationStatus, typeColor),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                   
-                  const SizedBox(height: 8),
-                  
-                  // Textový obsah
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Řádek s názvem a status badge naproti
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                product.name,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (expirationStatus != 'fresh' && expirationStatus != 'noDate')
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: _getStatusColor(expirationStatus),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  _getStatusText(expirationStatus),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 4),
-                        
-                        // Typ a lokace
-                        Text(
-                          '$type • $location',
+                  // Název a status
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          product.name,
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isDarkMode ? Colors.white : Colors.black,
                           ),
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        
-                        const SizedBox(height: 8),
-                        
-                        // Množství
-                        Row(
-                          children: [
-                            Icon(Icons.scale, size: 14, color: Colors.orange[700]),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${product.quantity} $unit',
-                              style: const TextStyle(fontSize: 12),
+                      ),
+                      if (expirationStatus != 'fresh' && expirationStatus != 'noDate')
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(expirationStatus),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            _getStatusText(expirationStatus),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
                             ),
-                          ],
+                          ),
                         ),
-                        
-                        const SizedBox(height: 4),
-                        
-                        // Datum pod množstvím
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.schedule,
-                              size: 14,
-                              color: _getIconColor(expirationStatus),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 4),
+                  
+                  // Typ a lokace
+                  Text(
+                    '$type • $location',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Množství a datum
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Množství
+                      Row(
+                        children: [
+                          Icon(Icons.scale, size: 12, color: Colors.orange[700]),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              '${product.quantity} $unit',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode ? Colors.white : Colors.black,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
-                            const SizedBox(width: 4),
-                            Text(
+                          ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 4),
+                      
+                      // Datum
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.schedule,
+                            size: 12,
+                            color: _getIconColor(expirationStatus),
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
                               expDate != null
                                   ? '${expDate.day}.${expDate.month}.${expDate.year}'
                                   : '—',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 color: _getTextColor(expirationStatus),
                                 fontWeight: expirationStatus == 'soon'
                                     ? FontWeight.w600
                                     : FontWeight.normal,
                               ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ],
               ),
-              
-              // Tlačítko editace - VPRAVO NAHORE CARDU MIMO FOTKU
-              Positioned(
-                top: 8,
-                right: 8,
-                child: IconButton(
-                  icon: Icon(Icons.more_vert, size: 20, color: isDark ? Colors.white70 : Colors.black54),
-                  onPressed: onEdit,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                  splashRadius: 18,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // Logika stavu expirace
+  // PŘIDAT METODY PRO OH RANČENÍ:
+
+  Border? _getBorderForExpirationStatus(String status) {
+    switch (status) {
+      case 'expired':
+        return Border.all(color: Colors.red, width: 2);
+      case 'today':
+        return Border.all(color: Colors.orange, width: 1);
+      case 'soon':
+        return Border.all(color: Colors.orange, width: 1);
+      case 'fresh':
+      case 'noDate':
+        return null;
+      default:
+        return null;
+    }
+  }
+
+  // ... zbytek tvých metod zůstává stejný
   String _getExpirationStatus(DateTime? expDate) {
     if (expDate == null) return 'noDate';
     final now = DateTime.now();
@@ -224,7 +261,6 @@ class ProductGridCard extends StatelessWidget {
     return 'fresh';
   }
 
-  // Barvy a styl
   Color _getColorForExpirationStatus(String status, Color typeColor) {
     switch (status) {
       case 'expired':
@@ -297,7 +333,6 @@ class ProductGridCard extends StatelessWidget {
     }
   }
 
-  // Obrázek produktu
   Widget _buildProductImage(IconData icon, Color color, String? localImagePath) {
     return Container(
       decoration: BoxDecoration(

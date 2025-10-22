@@ -137,7 +137,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Přidat produkt'),
-        backgroundColor: const Color.fromARGB(255, 254, 215, 97),
+        backgroundColor: const Color(0xFFEC9B05),
         actions: [
           IconButton(
             icon: const Icon(Icons.close),

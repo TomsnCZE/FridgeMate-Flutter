@@ -166,7 +166,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Upravit produkt'),
-        backgroundColor: const Color.fromARGB(255, 254, 215, 97),
+        backgroundColor: const Color(0xFFEC9B05),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete, color: Colors.red),

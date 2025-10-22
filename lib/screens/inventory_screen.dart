@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import '../models/product.dart';
 import '../widgets/product_card.dart';
+import '../widgets/product_grid_card.dart';
 import '../widgets/product_detail_bottom_sheet.dart';
+import '../widgets/filter_bottom_sheet.dart';
 import '../screens/qr_scanner_screen.dart';
 import '../screens/add_product_screen.dart';
 import '../screens/product_edit_screen.dart';
 import '../routes/custom_routes.dart';
+import '../services/settings_service.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -19,6 +22,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
   List<Product> _products = [];
   String _search = '';
   String _filterCategory = 'Vše';
+  String _filterType = 'Vše';
+  String _filterExpiration = 'Vše';
+  String _viewMode = 'list';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadViewMode();
+  }
+
+  Future<void> _loadViewMode() async {
+    final mode = await SettingsService.getViewMode();
+    setState(() {
+      _viewMode = mode;
+    });
+  }
 
   void _addProduct(Product product) {
     setState(() {
@@ -61,30 +80,115 @@ class _InventoryScreenState extends State<InventoryScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${_products[index].name} byl smazán'),
+            content: Text(
+              '${_products[index].name} byl smazán',
+              style: const TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       } else {
         _editProduct(index, result);
         if (!mounted) return;
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('${result.name} byl upraven')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${result.name} byl upraven',
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
+              ),
+            ),
+            backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.white,
+            behavior: SnackBarBehavior.floating,
+            elevation: 6,
+          ),
+        );
       }
     }
   }
 
+  void _showFilterSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => FilterBottomSheet(
+        currentCategory: _filterCategory,
+        currentType: _filterType,
+        currentExpiration: _filterExpiration,
+        onFiltersChanged: (category, type, expiration) {
+          setState(() {
+            _filterCategory = category;
+            _filterType = type;
+            _filterExpiration = expiration;
+          });
+        },
+      ),
+    );
+  }
+
+  void _toggleViewMode() async {
+    final newMode = _viewMode == 'list' ? 'grid' : 'list';
+    setState(() {
+      _viewMode = newMode;
+    });
+    await SettingsService.setViewMode(newMode);
+  }
+
+  List<Product> get filteredProducts {
+    return _products.where((p) {
+      final matchesSearch = p.name.toLowerCase().contains(_search.toLowerCase());
+      final matchesCategory = _filterCategory == 'Vše' || p.category == _filterCategory;
+      final matchesType = _filterType == 'Vše' || (p.extra?['type'] ?? 'Jídlo') == _filterType;
+      final matchesExpiration = _checkExpirationFilter(p);
+      
+      return matchesSearch && matchesCategory && matchesType && matchesExpiration;
+    }).toList();
+  }
+
+  bool _checkExpirationFilter(Product p) {
+    if (_filterExpiration == 'Vše') return true;
+    if (p.expirationDate == null) {
+      return _filterExpiration == 'Čerstvé';
+    }
+    
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final expiration = DateTime(p.expirationDate!.year, p.expirationDate!.month, p.expirationDate!.day);
+    
+    final difference = expiration.difference(today).inDays;
+    
+    switch (_filterExpiration) {
+      case 'Čerstvé': 
+        return difference > 3;
+      case 'Brzy expiruje': 
+        return difference >= 1 && difference <= 3;
+      case 'Dnes expiruje': 
+        return difference == 0;
+      case 'Prošlé': 
+        return difference < 0;
+      default: 
+        return true;
+    }
+  }
+
+  String _getActiveFiltersText() {
+    final filters = [];
+    if (_filterCategory != 'Vše') filters.add(_filterCategory);
+    if (_filterType != 'Vše') filters.add(_filterType);
+    if (_filterExpiration != 'Vše') filters.add(_filterExpiration);
+    
+    return filters.isEmpty ? 'Žádné aktivní filtry' : 'Filtry: ${filters.join(', ')}';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final filtered = _products.where((p) {
-      final matchesSearch = p.name.toLowerCase().contains(
-        _search.toLowerCase(),
-      );
-      final matchesCategory =
-          _filterCategory == 'Vše' || p.category == _filterCategory;
-      return matchesSearch && matchesCategory;
-    }).toList();
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    final filtered = filteredProducts;
+    final hasActiveFilters = _filterCategory != 'Vše' || _filterType != 'Vše' || _filterExpiration != 'Vše';
 
     final expiredCount = _products
         .where(
@@ -106,29 +210,100 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Scaffold(
       body: Column(
         children: [
+          // HLEDÁNÍ
           Padding(
             padding: const EdgeInsets.all(12),
             child: TextField(
               decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: Icon(Icons.search, color: theme.hintColor),
                 hintText: 'Hledat produkt...',
+                hintStyle: TextStyle(color: theme.hintColor),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
-                fillColor: Colors.grey[100],
+                fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[100],
               ),
               onChanged: (val) => setState(() => _search = val),
             ),
           ),
 
+          // FILTRY A ZOBRAZENÍ
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.filter_list),
+                    label: const Text('Filtrovat produkty'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
+                      foregroundColor: theme.colorScheme.onSurface,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: _showFilterSheet,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: Icon(
+                    _viewMode == 'list' ? Icons.grid_view : Icons.view_list,
+                    color: const Color(0xFFEC9B05),
+                  ),
+                  onPressed: _toggleViewMode,
+                  tooltip: _viewMode == 'list' ? 'Zobrazit jako mřížku' : 'Zobrazit jako seznam',
+                ),
+              ],
+            ),
+          ),
+
+          // INDIKÁTOR AKTIVNÍCH FILTRŮ
+          if (hasActiveFilters)
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.filter_alt, size: 16, color: theme.hintColor),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _getActiveFiltersText(),
+                      style: TextStyle(
+                        color: theme.hintColor,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      setState(() {
+                        _filterCategory = 'Vše';
+                        _filterType = 'Vše';
+                        _filterExpiration = 'Vše';
+                      });
+                    },
+                    child: Icon(Icons.close, size: 16, color: theme.hintColor),
+                  ),
+                ],
+              ),
+            ),
+
+          // UPOZORNĚNÍ NA EXPIRACI
           if (expiredCount > 0 || expiringSoonCount > 0)
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12),
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.orange[50],
+                color: isDarkMode
+                    ? Colors.orange[900]!.withOpacity(0.3)
+                    : Colors.orange[50],
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.orange),
               ),
@@ -142,7 +317,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           ? '$expiredCount produktů prošlo expirací'
                           : '$expiringSoonCount produktů brzy expiruje',
                       style: TextStyle(
-                        color: Colors.orange[800],
+                        color: Colors.orange[700],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -151,69 +326,70 @@ class _InventoryScreenState extends State<InventoryScreen> {
               ),
             ),
 
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: ['Vše', 'Lednice', 'Spíž', 'Mrazák']
-                    .map(
-                      (cat) => Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(cat),
-                          selected: _filterCategory == cat,
-                          onSelected: (selected) {
-                            setState(() => _filterCategory = cat);
-                          },
-                          backgroundColor: Colors.grey[100],
-                          selectedColor: const Color(
-                            0xFFEC9B05,
-                          ).withOpacity(0.2),
-                          checkmarkColor: const Color(0xFFEC9B05),
-                        ),
-                      ),
-                    )
-                    .toList(),
-              ),
-            ),
-          ),
-
+          // SEZNAM PRODUKTŮ
           Expanded(
             child: filtered.isEmpty
-                ? const Center(
+                ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.inventory_2_outlined,
                           size: 64,
-                          color: Colors.grey,
+                          color: theme.hintColor,
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
                           'Žádné produkty',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          style: TextStyle(
+                            color: theme.hintColor,
+                            fontSize: 16,
+                          ),
                         ),
                         Text(
-                          'Přidej první produkt pomocí tlačítka +',
-                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                          hasActiveFilters 
+                              ? 'Zkus změnit filtry'
+                              : 'Přidej první produkt pomocí tlačítka +',
+                          style: TextStyle(
+                            color: theme.hintColor,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
                   )
-                : ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, i) => ProductCard(
-                      product: filtered[i],
-                      index: _products.indexOf(filtered[i]),
-                      onEdit: () =>
-                          _showEditScreen(_products.indexOf(filtered[i])),
-                      onDelete: () =>
-                          _deleteProduct(_products.indexOf(filtered[i])),
-                      onTap: () => _showProductDetail(filtered[i]),
-                    ),
-                  ),
+                : _viewMode == 'list'
+                    ? ListView.builder(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, i) => ProductCard(
+                          product: filtered[i],
+                          index: _products.indexOf(filtered[i]),
+                          onEdit: () =>
+                              _showEditScreen(_products.indexOf(filtered[i])),
+                          onDelete: () =>
+                              _deleteProduct(_products.indexOf(filtered[i])),
+                          onTap: () => _showProductDetail(filtered[i]),
+                        ),
+                      )
+                    : GridView.builder(
+                        padding: const EdgeInsets.all(12),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                          childAspectRatio: 0.75,
+                        ),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, i) => ProductGridCard(
+                          product: filtered[i],
+                          index: _products.indexOf(filtered[i]),
+                          onEdit: () =>
+                              _showEditScreen(_products.indexOf(filtered[i])),
+                          onDelete: () =>
+                              _deleteProduct(_products.indexOf(filtered[i])),
+                          onTap: () => _showProductDetail(filtered[i]),
+                        ),
+                      ),
           ),
         ],
       ),
@@ -239,7 +415,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 _addProduct(newProduct);
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${newProduct.name} byl přidán do skladu'),
+                    content: Text(
+                      '${newProduct.name} byl přidán do skladu',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    backgroundColor: isDarkMode
+                        ? Colors.grey[800]
+                        : Colors.white,
+                    behavior: SnackBarBehavior.floating,
+                    elevation: 6,
                   ),
                 );
               }
@@ -259,7 +445,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('${newProduct.name} byl přidán do skladu'),
+                    content: Text(
+                      '${newProduct.name} byl přidán do skladu',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    backgroundColor: isDarkMode
+                        ? Colors.grey[800]
+                        : Colors.white,
+                    behavior: SnackBarBehavior.floating,
+                    elevation: 6,
                   ),
                 );
               }

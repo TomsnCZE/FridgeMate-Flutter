@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/product.dart';
-import '../screens/add_product_screen.dart'; // ✅ Přidáno
+import '../screens/add_product_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
@@ -14,6 +14,8 @@ class ProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     final ingredients = product.extra?['ingredients'] ?? 'Neuvedeno';
     final calories = product.extra?['calories'] ?? 'N/A';
     final type = product.extra?['type'] ?? 'Jídlo';
@@ -21,9 +23,9 @@ class ProductDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detail produktu'),
-        backgroundColor: const Color.fromARGB(255, 254, 215, 97),
+        backgroundColor: const Color(0xFFEC9B05),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -46,23 +48,33 @@ class ProductDetailScreen extends StatelessWidget {
 
             Text(
               product.name,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 24, 
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
             if (product.brand != null && product.brand!.isNotEmpty)
               Text(
                 product.brand!,
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 16, 
+                  color: theme.hintColor,
+                ),
               ),
 
             const SizedBox(height: 12),
 
             Row(
               children: [
-                const Icon(Icons.category, color: Colors.orange),
+                Icon(Icons.category, color: Colors.orange),
                 const SizedBox(width: 6),
                 Text(
                   'Kategorie: ${product.category}',
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
               ],
             ),
@@ -71,9 +83,15 @@ class ProductDetailScreen extends StatelessWidget {
 
             Row(
               children: [
-                const Icon(Icons.fastfood, color: Colors.orange),
+                Icon(Icons.fastfood, color: Colors.orange),
                 const SizedBox(width: 6),
-                Text('Typ: $type', style: const TextStyle(fontSize: 16)),
+                Text(
+                  'Typ: $type', 
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
               ],
             ),
 
@@ -81,25 +99,35 @@ class ProductDetailScreen extends StatelessWidget {
 
             Row(
               children: [
-                const Icon(Icons.local_fire_department, color: Colors.orange),
+                Icon(Icons.local_fire_department, color: Colors.orange),
                 const SizedBox(width: 6),
                 Text(
                   'Kalorie: $calories kcal / 100g',
-                  style: const TextStyle(fontSize: 16),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.colorScheme.onSurface,
+                  ),
                 ),
               ],
             ),
 
             const SizedBox(height: 20),
 
-            const Text(
+            Text(
               'Složení:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 18, 
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 6),
             Text(
               ingredients,
-              style: const TextStyle(fontSize: 15, color: Colors.black87),
+              style: TextStyle(
+                fontSize: 15, 
+                color: theme.colorScheme.onSurface.withOpacity(0.8),
+              ),
             ),
 
             const SizedBox(height: 30),

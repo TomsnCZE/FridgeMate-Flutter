@@ -1,35 +1,108 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/inventory_screen.dart';
+import 'screens/settings_screen.dart';
 
 void main() {
   runApp(const FridgeMateApp());
 }
 
-class FridgeMateApp extends StatelessWidget {
+class FridgeMateApp extends StatefulWidget {
   const FridgeMateApp({super.key});
+
+  @override
+  State<FridgeMateApp> createState() => _FridgeMateAppState();
+}
+
+class _FridgeMateAppState extends State<FridgeMateApp> {
+  bool _isDarkMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeSetting();
+  }
+
+  Future<void> _loadThemeSetting() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isDarkMode = prefs.getBool('dark_mode') ?? false;
+    });
+  }
+
+  void _toggleDarkMode(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('dark_mode', value);
+    setState(() {
+      _isDarkMode = value;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Fridge Mate',
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 236, 155, 5),
-        ),
-        scaffoldBackgroundColor: Colors.white,
-        textTheme: GoogleFonts.rubikTextTheme(),
+      theme: _buildLightTheme(),
+      darkTheme: _buildDarkTheme(),
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: HomeScreen(
+        isDarkMode: _isDarkMode,
+        onThemeChanged: _toggleDarkMode,
       ),
-      home: const HomeScreen(),
     );
   }
+
+  ThemeData _buildLightTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color.fromARGB(255, 236, 155, 5),
+        brightness: Brightness.light,
+      ),
+      scaffoldBackgroundColor: Colors.white,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color.fromARGB(255, 254, 215, 97),
+        foregroundColor: Colors.black,
+      ),
+      textTheme: GoogleFonts.rubikTextTheme(ThemeData.light().textTheme),
+    );
+  }
+
+ThemeData _buildDarkTheme() {
+  return ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: const Color.fromARGB(255, 236, 155, 5),
+      brightness: Brightness.dark,
+    ),
+    scaffoldBackgroundColor: const Color(0xFF121212),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color.fromARGB(255, 254, 215, 97),
+      foregroundColor: Colors.black,
+    ),
+    textTheme: GoogleFonts.rubikTextTheme(ThemeData.dark().textTheme),
+    cardTheme: CardThemeData(
+      color: const Color(0xFF1E1E1E),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+  );
+}
 }
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool isDarkMode;
+  final Function(bool) onThemeChanged;
+
+  const HomeScreen({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeChanged,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -56,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _tabIndex == 0 ? 'Domů' : 'Sklad',
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: const Color.fromARGB(255, 254, 215, 97),
+        backgroundColor: Color(0xFFEC9B05),
         surfaceTintColor: Colors.transparent,
         elevation: 2,
         shadowColor: Colors.black.withOpacity(0.1),
@@ -82,21 +155,29 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color.fromARGB(255, 254, 215, 97),
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Color(0xFFEC9B05),
               ),
               child: Align(
                 alignment: Alignment.bottomLeft,
                 child: Text(
                   'Menu',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: widget.isDarkMode ? Colors.black : Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.home),
+              title: const Text('Domů'),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() => _tabIndex = 0);
+              },
             ),
             ListTile(
               leading: const Icon(Icons.inventory),
@@ -108,9 +189,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const Divider(),
             ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Nastavení'),
+              onTap: () {
+                Navigator.pop(context);
+                _openSettingsScreen(context);
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.info_outline),
               title: const Text('O aplikaci'),
-              onTap: () {},
+              onTap: () {
+                Navigator.pop(context);
+                // Otevře About screen - doděláme později
+              },
             ),
           ],
         ),
@@ -123,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: widget.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(24),
             topRight: Radius.circular(24),
@@ -142,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: 0,
           currentIndex: _tabIndex,
           onTap: (index) => setState(() => _tabIndex = index),
-          selectedItemColor: Colors.black,
+          selectedItemColor: widget.isDarkMode ? Colors.white : Colors.black,
           unselectedItemColor: Colors.grey,
           showSelectedLabels: true,
           showUnselectedLabels: true,
@@ -166,7 +258,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Icon(
                       Icons.home_outlined,
                       size: 26,
-                      color: _tabIndex == 0 ? Colors.black : Colors.grey,
+                      color: _tabIndex == 0 
+                          ? (widget.isDarkMode ? Colors.white : Colors.black)
+                          : Colors.grey,
                     ),
                   ),
                 ),
@@ -181,7 +275,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     scale: _tabIndex == 0 ? 1.2 : 1.0,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutBack,
-                    child: const Icon(Icons.home, size: 26, color: Colors.black),
+                    child: Icon(
+                      Icons.home, 
+                      size: 26, 
+                      color: widget.isDarkMode ? Colors.white : Colors.black
+                    ),
                   ),
                 ),
               ),
@@ -201,7 +299,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Icon(
                       Icons.inventory_2_outlined,
                       size: 26,
-                      color: _tabIndex == 1 ? Colors.black : Colors.grey,
+                      color: _tabIndex == 1 
+                          ? (widget.isDarkMode ? Colors.white : Colors.black)
+                          : Colors.grey,
                     ),
                   ),
                 ),
@@ -216,10 +316,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     scale: _tabIndex == 1 ? 1.2 : 1.0,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutBack,
-                    child: const Icon(
+                    child: Icon(
                       Icons.inventory_2,
                       size: 26,
-                      color: Colors.black,
+                      color: widget.isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
                 ),
@@ -227,6 +327,18 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'Sklad',
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _openSettingsScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SettingsScreen(
+          onThemeChanged: widget.onThemeChanged,
+          currentDarkMode: widget.isDarkMode,
         ),
       ),
     );

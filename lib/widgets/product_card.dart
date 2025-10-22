@@ -20,12 +20,10 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final expDate = product.expirationDate;
-    final isExpired = expDate != null && expDate.isBefore(DateTime.now());
-    final isExpiringSoon = expDate != null && 
-        expDate.isAfter(DateTime.now()) && 
-        expDate.difference(DateTime.now()).inDays <= 3;
-
+    final expirationStatus = _getExpirationStatus(expDate);
+    
     final unit = product.extra?['unit'] ?? 'ks';
     final type = product.extra?['type'] ?? 'Jídlo';
     final location = product.extra?['location'] ?? 'Neznámé';
@@ -71,14 +69,11 @@ class ProductCard extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 2,
+          color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 255, 250, 234),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              border: isExpired 
-                ? Border.all(color: Colors.red, width: 2)
-                : isExpiringSoon
-                  ? Border.all(color: Colors.orange, width: 1)
-                  : null,
+              border: _getBorderForExpirationStatus(expirationStatus),
             ),
             child: Padding(
               padding: const EdgeInsets.all(12),
@@ -89,11 +84,7 @@ class ProductCard extends StatelessWidget {
                     width: 4,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: isExpired 
-                        ? Colors.red 
-                        : isExpiringSoon
-                          ? Colors.orange
-                          : typeColor,
+                      color: _getColorForExpirationStatus(expirationStatus, typeColor),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -111,40 +102,25 @@ class ProductCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 product.name,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
+                                  color: isDarkMode ? Colors.white : Colors.black,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
                             ),
-                            if (isExpired)
+                            if (expirationStatus != 'fresh' && expirationStatus != 'noDate')
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.red,
+                                  color: _getStatusColor(expirationStatus),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
-                                child: const Text(
-                                  'EXPIROVÁNO',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              )
-                            else if (isExpiringSoon)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: const Text(
-                                  'BRZY',
-                                  style: TextStyle(
+                                child: Text(
+                                  _getStatusText(expirationStatus),
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
@@ -156,7 +132,10 @@ class ProductCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           '$type • $location',
-                          style: const TextStyle(fontSize: 13, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                          ),
                         ),
                         const SizedBox(height: 6),
                         Row(
@@ -165,13 +144,16 @@ class ProductCard extends StatelessWidget {
                             const SizedBox(width: 4),
                             Text(
                               '${product.quantity} $unit',
-                              style: const TextStyle(fontSize: 13),
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDarkMode ? Colors.white : Colors.black,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Icon(
                               Icons.schedule, 
                               size: 14, 
-                              color: isExpired ? Colors.red : Colors.grey
+                              color: _getIconColor(expirationStatus),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -180,8 +162,8 @@ class ProductCard extends StatelessWidget {
                                 : '—',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isExpired ? Colors.red : Colors.grey[700],
-                                fontWeight: isExpiringSoon ? FontWeight.bold : FontWeight.normal,
+                                color: _getTextColor(expirationStatus),
+                                fontWeight: expirationStatus == 'soon' ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
                           ],
@@ -191,7 +173,10 @@ class ProductCard extends StatelessWidget {
                   ),
 
                   IconButton(
-                    icon: Icon(Icons.more_vert, color: Colors.grey[600]),
+                    icon: Icon(
+                      Icons.more_vert, 
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600]
+                    ),
                     onPressed: onEdit,
                   ),
                 ],
@@ -201,6 +186,124 @@ class ProductCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // LOGIKA PRO URČENÍ STAVU EXPIRACE
+  String _getExpirationStatus(DateTime? expDate) {
+    if (expDate == null) return 'noDate';
+    
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final expiration = DateTime(expDate.year, expDate.month, expDate.day);
+    
+    final difference = expiration.difference(today).inDays;
+    
+    if (difference < 0) return 'expired';
+    if (difference == 0) return 'today';
+    if (difference <= 3) return 'soon';
+    return 'fresh';
+  }
+
+  // BARVY PODLE STAVU EXPIRACE
+  Color _getColorForExpirationStatus(String status, Color typeColor) {
+    switch (status) {
+      case 'expired':
+        return Colors.red;
+      case 'today':
+        return Colors.orange;
+      case 'soon':
+        return Colors.orange;
+      case 'fresh':
+        return Colors.green;
+      case 'noDate':
+        return typeColor;
+      default:
+        return typeColor;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'expired':
+        return Colors.red;
+      case 'today':
+        return Colors.orange;
+      case 'soon':
+        return Colors.orange;
+      case 'fresh':
+        return Colors.green;
+      case 'noDate':
+        return Colors.grey;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getIconColor(String status) {
+    switch (status) {
+      case 'expired':
+        return Colors.red;
+      case 'today':
+        return Colors.orange;
+      case 'soon':
+        return Colors.orange;
+      case 'fresh':
+        return Colors.green;
+      case 'noDate':
+        return Colors.grey;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getTextColor(String status) {
+    switch (status) {
+      case 'expired':
+        return Colors.red;
+      case 'today':
+        return Colors.orange;
+      case 'soon':
+        return Colors.orange;
+      case 'fresh':
+        return Colors.green;
+      case 'noDate':
+        return Colors.grey[700]!;
+      default:
+        return Colors.grey[700]!;
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'expired':
+        return 'EXPIROVÁNO';
+      case 'today':
+        return 'DNES';
+      case 'soon':
+        return 'BRZY';
+      case 'fresh':
+        return 'ČERSTVÉ';
+      case 'noDate':
+        return '—';
+      default:
+        return '—';
+    }
+  }
+
+  Border? _getBorderForExpirationStatus(String status) {
+    switch (status) {
+      case 'expired':
+        return Border.all(color: Colors.red, width: 2);
+      case 'today':
+        return Border.all(color: Colors.orange, width: 1);
+      case 'soon':
+        return Border.all(color: Colors.orange, width: 1);
+      case 'fresh':
+      case 'noDate':
+        return null;
+      default:
+        return null;
+    }
   }
 
   Widget _buildProductImage(IconData icon, Color color, String? localImagePath) {
