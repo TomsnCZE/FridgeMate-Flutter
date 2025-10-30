@@ -5,7 +5,7 @@ class Product {
   final String category;
   final DateTime? expirationDate;
   final double quantity;
-  final Map<String, dynamic>? extra; // ✅ přidáno
+  final Map<String, dynamic>? extra;
 
   Product({
     required this.name,
@@ -14,7 +14,7 @@ class Product {
     required this.category,
     this.expirationDate,
     this.quantity = 1,
-    this.extra, // ✅ přidáno
+    this.extra,
   });
 
   Map<String, dynamic> toJson() => {
@@ -24,7 +24,7 @@ class Product {
         'category': category,
         'expirationDate': expirationDate?.toIso8601String(),
         'quantity': quantity,
-        'extra': extra, // ✅ přidáno
+        'extra': extra,
       };
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
@@ -38,6 +38,6 @@ class Product {
         quantity: (json['quantity'] ?? 1).toDouble(),
         extra: json['extra'] != null
             ? Map<String, dynamic>.from(json['extra'])
-            : null, // ✅ přidáno
+            : null,
       );
 }

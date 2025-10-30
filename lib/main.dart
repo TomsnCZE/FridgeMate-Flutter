@@ -3,8 +3,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/inventory_screen.dart';
 import 'screens/settings_screen.dart';
+import 'package:openfoodfacts/openfoodfacts.dart' as off;
 
 void main() {
+    off.OpenFoodAPIConfiguration.userAgent = off.UserAgent(
+    name: 'Fridge Mate',
+  );
+  
+  off.OpenFoodAPIConfiguration.globalLanguages = [
+    off.OpenFoodFactsLanguage.CZECH,
+  ];
   runApp(const FridgeMateApp());
 }
 
@@ -71,27 +79,27 @@ class _FridgeMateAppState extends State<FridgeMateApp> {
     );
   }
 
-ThemeData _buildDarkTheme() {
-  return ThemeData(
-    useMaterial3: true,
-    brightness: Brightness.dark,
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color.fromARGB(255, 236, 155, 5),
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      useMaterial3: true,
       brightness: Brightness.dark,
-    ),
-    scaffoldBackgroundColor: const Color(0xFF121212),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: Color.fromARGB(255, 254, 215, 97),
-      foregroundColor: Colors.black,
-    ),
-    textTheme: GoogleFonts.rubikTextTheme(ThemeData.dark().textTheme),
-    cardTheme: CardThemeData(
-      color: const Color(0xFF1E1E1E),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ),
-  );
-}
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: const Color.fromARGB(255, 236, 155, 5),
+        brightness: Brightness.dark,
+      ),
+      scaffoldBackgroundColor: const Color(0xFF121212),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Color.fromARGB(255, 254, 215, 97),
+        foregroundColor: Colors.black,
+      ),
+      textTheme: GoogleFonts.rubikTextTheme(ThemeData.dark().textTheme),
+      cardTheme: CardThemeData(
+        color: const Color(0xFF1E1E1E),
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
 }
 
 class HomeScreen extends StatefulWidget {
@@ -111,15 +119,16 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _tabIndex = 0;
 
+  // DEMO DATA - později nahradíme reálnými daty
+  final int _totalProducts = 24;
+  final int _expiringSoonCount = 3;
+  final int _expiredCount = 1;
+  final int _weeklyConsumed = 8;
+
   @override
   Widget build(BuildContext context) {
     final List<Widget> pages = [
-      const Center(
-        child: Text(
-          'Domů',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ),
+      _buildHomeScreen(),
       const InventoryScreen(),
     ];
 
@@ -129,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _tabIndex == 0 ? 'Domů' : 'Sklad',
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Color(0xFFEC9B05),
+        backgroundColor: const Color(0xFFEC9B05),
         surfaceTintColor: Colors.transparent,
         elevation: 2,
         shadowColor: Colors.black.withOpacity(0.1),
@@ -329,6 +338,343 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHomeScreen() {
+    final isDarkMode = widget.isDarkMode;
+    final hasExpiringProducts = _expiringSoonCount > 0 || _expiredCount > 0;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // 1. STATISTIKY - 4 karty
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            children: [
+              _buildStatCard("Celkem produktů", _totalProducts, Icons.inventory_2, isDarkMode),
+              _buildStatCard("Brzy expiruje", _expiringSoonCount, Icons.warning, isDarkMode),
+              _buildStatCard("Prošlé", _expiredCount, Icons.error, isDarkMode),
+              _buildStatCard("Spotřebováno", _weeklyConsumed, Icons.analytics, isDarkMode),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // 2. UPOZORNĚNÍ
+          if (hasExpiringProducts) _buildWarningPanel(isDarkMode),
+
+          const SizedBox(height: 20),
+
+          // 3. RYCHLÉ AKCE
+          _buildQuickActions(isDarkMode),
+
+          const SizedBox(height: 20),
+
+          // 4. RYCHLÝ PŘÍSTUP
+          _buildQuickAccess(isDarkMode),
+
+          const SizedBox(height: 20),
+
+          // 5. AKTIVITA
+          _buildRecentActivity(isDarkMode),
+
+          const SizedBox(height: 20),
+
+          // 6. DOPORUČENÍ
+          _buildRecommendations(isDarkMode),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String title, int count, IconData icon, bool isDarkMode) {
+    return Card(
+      elevation: 2,
+      color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 254, 215, 97),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 32, color: isDarkMode ? Colors.white : Colors.black),
+            const SizedBox(height: 8),
+            Text(
+              count.toString(),
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+            ),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWarningPanel(bool isDarkMode) {
+    return Card(
+      elevation: 2,
+      color: Colors.orange[50],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(Icons.warning, color: Colors.orange[700]),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pozor na expirace!',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange[800],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$_expiringSoonCount produktů brzy expiruje',
+                    style: TextStyle(
+                      color: Colors.orange[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() => _tabIndex = 1);
+              },
+              child: const Text('Zobrazit'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(bool isDarkMode) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Rychlé akce',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                'Přidat ručně',
+                Icons.add,
+                () {
+                  // Otevře přidání produktu
+                },
+                isDarkMode,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionButton(
+                'Skenovat QR',
+                Icons.qr_code_scanner,
+                () {
+                  // Otevře QR scanner
+                },
+                isDarkMode,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionButton(
+                'Rychlý výběr',
+                Icons.category,
+                () {
+                  // Otevře rychlý výběr
+                },
+                isDarkMode,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton(String text, IconData icon, VoidCallback onTap, bool isDarkMode) {
+    return Card(
+      elevation: 2,
+      color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 254, 215, 97),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Icon(icon, size: 24, color: isDarkMode ? Colors.white : Colors.black),
+              const SizedBox(height: 8),
+              Text(
+                text,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickAccess(bool isDarkMode) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Rychlý přístup',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 12),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          children: [
+            _buildQuickAccessCard('Nákupní seznam', Icons.shopping_cart, isDarkMode),
+            _buildQuickAccessCard('Statistiky', Icons.bar_chart, isDarkMode),
+            _buildQuickAccessCard('Recepty', Icons.restaurant_menu, isDarkMode),
+            _buildQuickAccessCard('Nastavení', Icons.settings, isDarkMode),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickAccessCard(String title, IconData icon, bool isDarkMode) {
+    return Card(
+      elevation: 2,
+      color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 254, 215, 97),
+      child: InkWell(
+        onTap: () {
+          // Otevře příslušnou obrazovku
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 32, color: isDarkMode ? Colors.white : Colors.black),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecentActivity(bool isDarkMode) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Nedávná aktivita',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 2,
+          color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 254, 215, 97),
+          child: const Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Zatím placeholder - později reálná data
+                Text(
+                  'Zatím žádná aktivita',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecommendations(bool isDarkMode) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Doporučení',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 2,
+          color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 254, 215, 97),
+          child: const Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Zatím placeholder - později chytré tipy
+                Text(
+                  'Přidej více produktů pro personalizovaná doporučení',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 

@@ -1,75 +1,88 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:openfoodfacts/openfoodfacts.dart' as off;
 import '../models/product.dart';
 
 class ApiService {
-  static const String baseUrl =
-      'https://world.openfoodfacts.org/api/v0/product/';
-
   /// Vyhledá produkt podle čárového / QR kódu
   Future<Product?> fetchProductByBarcode(String barcode) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl$barcode.json'));
+      // Konfigurace dotazu
+      final configuration = off.ProductQueryConfiguration(
+        barcode,
+        version: off.ProductQueryVersion.v3,
+        language: off.OpenFoodFactsLanguage.CZECH,
+        fields: [off.ProductField.ALL],
+      );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      // Zavolání API
+      final result = await off.OpenFoodAPIClient.getProductV3(configuration);
 
-        if (data['status'] == 1 && data['product'] != null) {
-          final productData = data['product'];
+      // Kontrola, zda byl produkt nalezen
+      if (result.status == off.ProductResultV3.statusSuccess && 
+          result.product != null) {
+        final offProduct = result.product!;
 
-          final name = productData['product_name'] ?? 'Neznámý produkt';
-          final brand = productData['brands'] ?? '';
-          final imageUrl = productData['image_url'] ?? '';
+        // Získání základních informací
+        final name = offProduct.productName ?? 'Neznámý produkt';
+        final brand = offProduct.brands ?? '';
+        final imageUrl = offProduct.imageFrontUrl ?? '';
 
-          final categoryTags = (productData['categories_tags'] ?? [])
-              .cast<String>()
-              .map((e) => e.toLowerCase())
-              .toList();
+        // Kategorie
+        final categoryTags = offProduct.categoriesTags ?? [];
+        final category = categoryTags.isNotEmpty
+            ? categoryTags.first.replaceAll(RegExp(r'^[a-z]{2}:'), '')
+            : 'Neznámá';
 
-          final category = categoryTags.isNotEmpty
-              ? categoryTags.first.replaceAll(RegExp(r'^[a-z]{2}:'), '')
-              : 'Neznámá';
+        // Složení
+        final ingredients = offProduct.ingredientsText ?? 'Složení není dostupné';
 
-          final ingredients =
-              productData['ingredients_text'] ?? 'Složení není dostupné';
-
-          final calories = productData['nutriments']?['energy-kcal_100g']
-                  ?.toString() ??
-              'N/A';
-
-          // 🧠 Automatická detekce typu (Jídlo / Pití / Ostatní)
-          String type = 'Ostatní';
-          if (categoryTags.any((t) =>
-              t.contains('beverages') ||
-              t.contains('drink') ||
-              t.contains('soda') ||
-              t.contains('juice'))) {
-            type = 'Pití';
-          } else if (categoryTags.any((t) =>
-              t.contains('food') ||
-              t.contains('meal') ||
-              t.contains('snack') ||
-              t.contains('dish'))) {
-            type = 'Jídlo';
+        // Kalorie - robustní způsob získání energie
+        String calories = 'N/A';
+        if (offProduct.nutriments != null) {
+          try {
+            final energy = offProduct.nutriments!.getValue(
+              off.Nutrient.energyKCal,
+              off.PerSize.oneHundredGrams,
+            );
+            if (energy != null) {
+              calories = energy.toStringAsFixed(0); // Zaokrouhlení na celé číslo
+            }
+          } catch (e) {
+            // Pokud getValue selže, zkusíme alternativní přístup
+            print('⚠️ Nepodařilo se získat kalorie: $e');
           }
-
-          return Product(
-            name: name,
-            brand: brand,
-            imageUrl: imageUrl,
-            category: category,
-            extra: {
-              'ingredients': ingredients,
-              'calories': calories,
-              'type': type,
-            },
-          );
-        } else {
-          return null; // Produkt nenalezen
         }
+
+        // 🧠 Automatická detekce typu (Jídlo / Pití / Ostatní)
+        String type = 'Ostatní';
+        final lowerCaseTags = categoryTags.map((t) => t.toLowerCase()).toList();
+        
+        if (lowerCaseTags.any((t) =>
+            t.contains('beverages') ||
+            t.contains('drink') ||
+            t.contains('soda') ||
+            t.contains('juice'))) {
+          type = 'Pití';
+        } else if (lowerCaseTags.any((t) =>
+            t.contains('food') ||
+            t.contains('meal') ||
+            t.contains('snack') ||
+            t.contains('dish'))) {
+          type = 'Jídlo';
+        }
+
+        return Product(
+          name: name,
+          brand: brand,
+          imageUrl: imageUrl,
+          category: category,
+          extra: {
+            'ingredients': ingredients,
+            'calories': calories,
+            'type': type,
+          },
+        );
       } else {
-        print('HTTP chyba: ${response.statusCode}');
-        return null;
+        return null; // Produkt nenalezen
       }
     } catch (e) {
       print('❌ Chyba při načítání produktu: $e');
