@@ -67,12 +67,12 @@ class _FridgeMateAppState extends State<FridgeMateApp> {
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: const Color.fromARGB(255, 236, 155, 5),
+        seedColor: const Color.fromARGB(255, 205, 41, 112),
         brightness: Brightness.light,
       ),
       scaffoldBackgroundColor: Colors.white,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Color.fromARGB(255, 254, 215, 97),
+        backgroundColor: Color.fromARGB(255, 205, 41, 112),
         foregroundColor: Colors.black,
       ),
       textTheme: GoogleFonts.rubikTextTheme(ThemeData.light().textTheme),

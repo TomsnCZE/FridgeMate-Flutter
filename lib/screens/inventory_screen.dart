@@ -431,7 +431,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
       floatingActionButton: SpeedDial(
         animatedIcon: AnimatedIcons.menu_close,
-        backgroundColor: const Color(0xFFEC9B05),
+        backgroundColor: const Color.fromARGB(255, 169, 18, 121),
         foregroundColor: Colors.white,
         overlayColor: Colors.black,
         overlayOpacity: 0.4,
