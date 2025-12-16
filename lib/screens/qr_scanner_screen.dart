@@ -17,7 +17,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
   Future<void> _handleBarcode(String code) async {
     if (!_isScanning) return;
-    
+
     setState(() {
       _isScanning = false;
       _lastScannedCode = code;
@@ -36,19 +36,19 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       return;
     }
 
-    // ✅ Zobrazíme detail produktu
-    final addedProduct = await Navigator.push<Product>(
+    // Zobrazíme detail produktu, z něj lze přidat do DB (AddProductScreen)
+    final inserted = await Navigator.push<Product?>(
       context,
       MaterialPageRoute(
-        builder: (context) => ProductDetailScreen(product: product, index: -1),
+        builder: (context) => ProductDetailScreen(product: product),
       ),
     );
 
     if (!mounted) return;
 
-    // ✅ VRÁTÍME PRODUKT ZPĚT DO INVENTORY SCREEN
-    if (addedProduct != null) {
-      Navigator.pop(context, addedProduct);
+    if (inserted != null) {
+      // Produkt byl vložen — předáme ho dál (InventoryScreen načte DB)
+      Navigator.pop(context, inserted);
     } else {
       setState(() => _isScanning = true);
     }
@@ -61,7 +61,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Skenovat QR kód'),
+        title: const Text('Skenovat čárový kód'),
         backgroundColor: const Color(0xFFEC9B05),
       ),
       body: Stack(
@@ -72,9 +72,9 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               facing: CameraFacing.back,
             ),
             onDetect: (capture) async {
-              final List<Barcode> barcodes = capture.barcodes;
+              final barcodes = capture.barcodes;
               if (barcodes.isNotEmpty) {
-                final String code = barcodes.first.rawValue ?? '';
+                final code = barcodes.first.rawValue ?? '';
                 if (code.isNotEmpty) {
                   await _handleBarcode(code);
                 }
@@ -99,7 +99,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDarkMode 
+                color: isDarkMode
                     ? Colors.grey[900]!.withOpacity(0.9)
                     : Colors.white.withOpacity(0.9),
                 borderRadius: const BorderRadius.vertical(

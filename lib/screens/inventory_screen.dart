@@ -10,6 +10,7 @@ import '../screens/add_product_screen.dart';
 import '../screens/product_edit_screen.dart';
 import '../routes/custom_routes.dart';
 import '../services/settings_service.dart';
+import '../services/database_service.dart';
 
 class InventoryScreen extends StatefulWidget {
   const InventoryScreen({super.key});
@@ -30,6 +31,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   void initState() {
     super.initState();
     _loadViewMode();
+    _loadProducts();
   }
 
   Future<void> _loadViewMode() async {
@@ -39,22 +41,60 @@ class _InventoryScreenState extends State<InventoryScreen> {
     });
   }
 
-  void _addProduct(Product product) {
+  Future<void> _loadProducts() async {
+    final data = await DatabaseService.instance.getAllProducts();
     setState(() {
-      _products.add(product);
+      _products = data.map((e) => Product.fromMap(e)).toList();
     });
   }
 
-  void _editProduct(int index, Product product) {
-    setState(() {
-      _products[index] = product;
-    });
+  // přidání: očekává Product jako návrat z AddProductScreen
+  Future<void> _handleAddPressed() async {
+    final result = await Navigator.push<Product?>(
+      context,
+      SlideLeftRoute(page: const AddProductScreen()),
+    );
+
+    if (result != null) {
+      await _loadProducts();
+      if (!mounted) return;
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${result.name} byl přidán do skladu',
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+          ),
+          backgroundColor: isDark ? Colors.grey[800] : Colors.white,
+          behavior: SnackBarBehavior.floating,
+          elevation: 6,
+        ),
+      );
+    }
   }
 
-  void _deleteProduct(int index) {
-    setState(() {
-      _products.removeAt(index);
-    });
+  Future<void> _handleScanPressed() async {
+    final result = await Navigator.push<Product?>(
+      context,
+      MaterialPageRoute(builder: (_) => const QRScannerScreen()),
+    );
+
+    if (result != null) {
+      await _loadProducts();
+      if (!mounted) return;
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '${result.name} byl přidán do skladu',
+            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+          ),
+          backgroundColor: isDark ? Colors.grey[800] : Colors.white,
+          behavior: SnackBarBehavior.floating,
+          elevation: 6,
+        ),
+      );
+    }
   }
 
   void _showProductDetail(Product product) {
@@ -66,17 +106,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  void _showEditScreen(int index) async {
+  Future<void> _showEditScreen(int index) async {
     final result = await Navigator.push(
       context,
       SlideRightRoute(
-        page: EditProductScreen(product: _products[index], index: index),
+        page: EditProductScreen(product: _products[index]),
       ),
     );
 
     if (result != null) {
       if (result == 'delete') {
-        _deleteProduct(index);
+        await _loadProducts();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -88,18 +128,17 @@ class _InventoryScreenState extends State<InventoryScreen> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-      } else {
-        _editProduct(index, result);
+      } else if (result is Product) {
+        await _loadProducts();
         if (!mounted) return;
+        final isDark = Theme.of(context).brightness == Brightness.dark;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${result.name} byl upraven',
-              style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black,
-              ),
+              '${(result).name} byl upraven',
+              style: TextStyle(color: isDark ? Colors.white : Colors.black),
             ),
-            backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.white,
+            backgroundColor: isDark ? Colors.grey[800] : Colors.white,
             behavior: SnackBarBehavior.floating,
             elevation: 6,
           ),
@@ -142,7 +181,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       final matchesCategory = _filterCategory == 'Vše' || p.category == _filterCategory;
       final matchesType = _filterType == 'Vše' || (p.extra?['type'] ?? 'Jídlo') == _filterType;
       final matchesExpiration = _checkExpirationFilter(p);
-      
+
       return matchesSearch && matchesCategory && matchesType && matchesExpiration;
     }).toList();
   }
@@ -152,23 +191,23 @@ class _InventoryScreenState extends State<InventoryScreen> {
     if (p.expirationDate == null) {
       return _filterExpiration == 'Čerstvé';
     }
-    
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final expiration = DateTime(p.expirationDate!.year, p.expirationDate!.month, p.expirationDate!.day);
-    
+
     final difference = expiration.difference(today).inDays;
-    
+
     switch (_filterExpiration) {
-      case 'Čerstvé': 
+      case 'Čerstvé':
         return difference > 3;
-      case 'Brzy expiruje': 
+      case 'Brzy expiruje':
         return difference >= 1 && difference <= 3;
-      case 'Dnes expiruje': 
+      case 'Dnes expiruje':
         return difference == 0;
-      case 'Prošlé': 
+      case 'Prošlé':
         return difference < 0;
-      default: 
+      default:
         return true;
     }
   }
@@ -178,7 +217,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     if (_filterCategory != 'Vše') filters.add(_filterCategory);
     if (_filterType != 'Vše') filters.add(_filterType);
     if (_filterExpiration != 'Vše') filters.add(_filterExpiration);
-    
+
     return filters.isEmpty ? 'Žádné aktivní filtry' : 'Filtry: ${filters.join(', ')}';
   }
 
@@ -347,7 +386,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           ),
                         ),
                         Text(
-                          hasActiveFilters 
+                          hasActiveFilters
                               ? 'Zkus změnit filtry'
                               : 'Přidej první produkt pomocí tlačítka +',
                           style: TextStyle(
@@ -364,10 +403,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         itemBuilder: (context, i) => ProductCard(
                           product: filtered[i],
                           index: _products.indexOf(filtered[i]),
-                          onEdit: () =>
-                              _showEditScreen(_products.indexOf(filtered[i])),
-                          onDelete: () =>
-                              _deleteProduct(_products.indexOf(filtered[i])),
+                          onEdit: () => _showEditScreen(_products.indexOf(filtered[i])),
+                          onDelete: () => _showEditScreen(_products.indexOf(filtered[i])), // open edit to delete
                           onTap: () => _showProductDetail(filtered[i]),
                         ),
                       )
@@ -383,10 +420,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         itemBuilder: (context, i) => ProductGridCard(
                           product: filtered[i],
                           index: _products.indexOf(filtered[i]),
-                          onEdit: () =>
-                              _showEditScreen(_products.indexOf(filtered[i])),
-                          onDelete: () =>
-                              _deleteProduct(_products.indexOf(filtered[i])),
+                          onEdit: () => _showEditScreen(_products.indexOf(filtered[i])),
+                          onDelete: () => _showEditScreen(_products.indexOf(filtered[i])),
                           onTap: () => _showProductDetail(filtered[i]),
                         ),
                       ),
@@ -405,61 +440,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
           SpeedDialChild(
             child: const Icon(Icons.add),
             label: 'Přidat ručně',
-            onTap: () async {
-              final newProduct = await Navigator.push<Product>(
-                context,
-                SlideLeftRoute(page: const AddProductScreen()),
-              );
-
-              if (newProduct != null) {
-                _addProduct(newProduct);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '${newProduct.name} byl přidán do skladu',
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    backgroundColor: isDarkMode
-                        ? Colors.grey[800]
-                        : Colors.white,
-                    behavior: SnackBarBehavior.floating,
-                    elevation: 6,
-                  ),
-                );
-              }
-            },
+            onTap: _handleAddPressed,
           ),
           SpeedDialChild(
             child: const Icon(Icons.qr_code_scanner),
-            label: 'Skenovat QR',
-            onTap: () async {
-              final newProduct = await Navigator.push<Product>(
-                context,
-                MaterialPageRoute(builder: (_) => const QRScannerScreen()),
-              );
-
-              if (newProduct != null) {
-                _addProduct(newProduct);
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      '${newProduct.name} byl přidán do skladu',
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    backgroundColor: isDarkMode
-                        ? Colors.grey[800]
-                        : Colors.white,
-                    behavior: SnackBarBehavior.floating,
-                    elevation: 6,
-                  ),
-                );
-              }
-            },
+            label: 'Skenovat',
+            onTap: _handleScanPressed,
           ),
         ],
       ),

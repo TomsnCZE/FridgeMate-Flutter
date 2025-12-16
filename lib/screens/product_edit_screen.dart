@@ -2,15 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/product.dart';
+import '../services/database_service.dart';
 
 class EditProductScreen extends StatefulWidget {
   final Product product;
-  final int index;
 
   const EditProductScreen({
     super.key,
     required this.product,
-    required this.index,
   });
 
   @override
@@ -44,7 +43,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _category = widget.product.category;
     _type = widget.product.extra?['type'] ?? 'Jídlo';
     _expirationDate = widget.product.expirationDate;
-    
+
     final originalPath = widget.product.extra?['localImagePath'];
     if (originalPath != null && originalPath.isNotEmpty) {
       _originalImagePath = originalPath;
@@ -59,7 +58,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         maxWidth: 1200,
         imageQuality: 85,
       );
-      
+
       if (photo != null && mounted) {
         setState(() {
           _selectedImage = File(photo.path);
@@ -77,7 +76,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         maxWidth: 1200,
         imageQuality: 85,
       );
-      
+
       if (image != null && mounted) {
         setState(() {
           _selectedImage = File(image.path);
@@ -107,12 +106,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     final quantity = double.tryParse(_quantityController.text) ?? 1.0;
-    
+
     final updatedProduct = Product(
+      id: widget.product.id,
       name: _nameController.text.trim(),
       brand: _brandController.text.trim().isEmpty ? null : _brandController.text.trim(),
       category: _category,
@@ -121,36 +121,43 @@ class _EditProductScreenState extends State<EditProductScreen> {
       extra: {
         'unit': _unit,
         'type': _type,
-        'location': _category,
-        'localImagePath': _selectedImage?.path,
+        'localImagePath': _selectedImage?.path ?? _originalImagePath,
       },
     );
 
-    Navigator.of(context).pop(updatedProduct);
+    // UPDATE in DB
+    if (widget.product.id != null) {
+      await DatabaseService.instance.updateProduct(widget.product.id!, updatedProduct.toMap());
+    }
+
+    if (!mounted) return;
+    Navigator.pop(context, updatedProduct); // return updated product
   }
 
-  void _deleteProduct() {
-    showDialog(
+  Future<void> _deleteProduct() async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Smazat produkt?'),
         content: Text('Opravdu chceš smazat "${widget.product.name}"?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Zrušit'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Zrušit')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              Navigator.pop(context); // zavřít dialog
-              Navigator.pop(context, 'delete'); // vrátit 'delete' zpět
-            },
+            onPressed: () => Navigator.pop(context, true),
             child: const Text('Smazat', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
+
+    if (confirm == true) {
+      if (widget.product.id != null) {
+        await DatabaseService.instance.deleteProduct(widget.product.id!);
+      }
+      if (!mounted) return;
+      Navigator.pop(context, 'delete');
+    }
   }
 
   @override
@@ -188,7 +195,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
               // FOTKA PRODUKTU
               _buildImageSelector(),
               const SizedBox(height: 24),
-
               // NÁZEV
               TextFormField(
                 controller: _nameController,
@@ -339,7 +345,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
-        
+
         if (_selectedImage != null)
           Stack(
             children: [
@@ -392,7 +398,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
               ),
             ],
           ),
-          
+
         if (_originalImagePath != null && _selectedImage == null)
           Padding(
             padding: const EdgeInsets.only(top: 8),

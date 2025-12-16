@@ -52,7 +52,6 @@ class ApiService {
           }
         }
 
-        // 🧠 Automatická detekce typu (Jídlo / Pití / Ostatní)
         String type = 'Ostatní';
         final lowerCaseTags = categoryTags.map((t) => t.toLowerCase()).toList();
         

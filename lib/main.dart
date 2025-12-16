@@ -4,12 +4,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/inventory_screen.dart';
 import 'screens/settings_screen.dart';
 import 'package:openfoodfacts/openfoodfacts.dart' as off;
+import 'screens/about_screen.dart';
+import 'screens/nutriscore_test.dart';
 
 void main() {
-    off.OpenFoodAPIConfiguration.userAgent = off.UserAgent(
-    name: 'Fridge Mate',
-  );
-  
+  off.OpenFoodAPIConfiguration.userAgent = off.UserAgent(name: 'Fridge Mate');
+
   off.OpenFoodAPIConfiguration.globalLanguages = [
     off.OpenFoodFactsLanguage.CZECH,
   ];
@@ -127,10 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      _buildHomeScreen(),
-      const InventoryScreen(),
-    ];
+    final List<Widget> pages = [_buildHomeScreen(), const InventoryScreen()];
 
     return Scaffold(
       appBar: AppBar(
@@ -165,9 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             DrawerHeader(
-              decoration: const BoxDecoration(
-                color: Color(0xFFEC9B05),
-              ),
+              decoration: const BoxDecoration(color: Color(0xFFEC9B05)),
               child: Align(
                 alignment: Alignment.bottomLeft,
                 child: Text(
@@ -196,6 +191,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() => _tabIndex = 1);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.bakery_dining),
+              title: const Text('Test Nutriscore'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NutriscoreTestScreen(),
+                  ),
+                );
+              },
+            ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.settings),
@@ -210,7 +218,10 @@ class _HomeScreenState extends State<HomeScreen> {
               title: const Text('O aplikaci'),
               onTap: () {
                 Navigator.pop(context);
-                // Otevře About screen - doděláme později
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutScreen()),
+                );
               },
             ),
           ],
@@ -267,7 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Icon(
                       Icons.home_outlined,
                       size: 26,
-                      color: _tabIndex == 0 
+                      color: _tabIndex == 0
                           ? (widget.isDarkMode ? Colors.white : Colors.black)
                           : Colors.grey,
                     ),
@@ -285,9 +296,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutBack,
                     child: Icon(
-                      Icons.home, 
-                      size: 26, 
-                      color: widget.isDarkMode ? Colors.white : Colors.black
+                      Icons.home,
+                      size: 26,
+                      color: widget.isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
                 ),
@@ -308,7 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Icon(
                       Icons.inventory_2_outlined,
                       size: 26,
-                      color: _tabIndex == 1 
+                      color: _tabIndex == 1
                           ? (widget.isDarkMode ? Colors.white : Colors.black)
                           : Colors.grey,
                     ),
@@ -357,10 +368,25 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
             children: [
-              _buildStatCard("Celkem produktů", _totalProducts, Icons.inventory_2, isDarkMode),
-              _buildStatCard("Brzy expiruje", _expiringSoonCount, Icons.warning, isDarkMode),
+              _buildStatCard(
+                "Celkem produktů",
+                _totalProducts,
+                Icons.inventory_2,
+                isDarkMode,
+              ),
+              _buildStatCard(
+                "Brzy expiruje",
+                _expiringSoonCount,
+                Icons.warning,
+                isDarkMode,
+              ),
               _buildStatCard("Prošlé", _expiredCount, Icons.error, isDarkMode),
-              _buildStatCard("Spotřebováno", _weeklyConsumed, Icons.analytics, isDarkMode),
+              _buildStatCard(
+                "Spotřebováno",
+                _weeklyConsumed,
+                Icons.analytics,
+                isDarkMode,
+              ),
             ],
           ),
 
@@ -393,16 +419,27 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, int count, IconData icon, bool isDarkMode) {
+  Widget _buildStatCard(
+    String title,
+    int count,
+    IconData icon,
+    bool isDarkMode,
+  ) {
     return Card(
       elevation: 2,
-      color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 254, 215, 97),
+      color: isDarkMode
+          ? const Color(0xFF1E1E1E)
+          : const Color.fromARGB(255, 254, 215, 97),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 32, color: isDarkMode ? Colors.white : Colors.black),
+            Icon(
+              icon,
+              size: 32,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
             const SizedBox(height: 8),
             Text(
               count.toString(),
@@ -450,9 +487,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 4),
                   Text(
                     '$_expiringSoonCount produktů brzy expiruje',
-                    style: TextStyle(
-                      color: Colors.orange[700],
-                    ),
+                    style: TextStyle(color: Colors.orange[700]),
                   ),
                 ],
               ),
@@ -485,14 +520,9 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildActionButton(
-                'Přidat ručně',
-                Icons.add,
-                () {
-                  // Otevře přidání produktu
-                },
-                isDarkMode,
-              ),
+              child: _buildActionButton('Přidat ručně', Icons.add, () {
+                // Otevře přidání produktu
+              }, isDarkMode),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -507,14 +537,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildActionButton(
-                'Rychlý výběr',
-                Icons.category,
-                () {
-                  // Otevře rychlý výběr
-                },
-                isDarkMode,
-              ),
+              child: _buildActionButton('Rychlý výběr', Icons.category, () {
+                // Otevře rychlý výběr
+              }, isDarkMode),
             ),
           ],
         ),
@@ -522,10 +547,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionButton(String text, IconData icon, VoidCallback onTap, bool isDarkMode) {
+  Widget _buildActionButton(
+    String text,
+    IconData icon,
+    VoidCallback onTap,
+    bool isDarkMode,
+  ) {
     return Card(
       elevation: 2,
-      color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 254, 215, 97),
+      color: isDarkMode
+          ? const Color(0xFF1E1E1E)
+          : const Color.fromARGB(255, 254, 215, 97),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -533,7 +565,11 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Icon(icon, size: 24, color: isDarkMode ? Colors.white : Colors.black),
+              Icon(
+                icon,
+                size: 24,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
               const SizedBox(height: 8),
               Text(
                 text,
@@ -570,7 +606,11 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
           children: [
-            _buildQuickAccessCard('Nákupní seznam', Icons.shopping_cart, isDarkMode),
+            _buildQuickAccessCard(
+              'Nákupní seznam',
+              Icons.shopping_cart,
+              isDarkMode,
+            ),
             _buildQuickAccessCard('Statistiky', Icons.bar_chart, isDarkMode),
             _buildQuickAccessCard('Recepty', Icons.restaurant_menu, isDarkMode),
             _buildQuickAccessCard('Nastavení', Icons.settings, isDarkMode),
@@ -583,7 +623,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildQuickAccessCard(String title, IconData icon, bool isDarkMode) {
     return Card(
       elevation: 2,
-      color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 254, 215, 97),
+      color: isDarkMode
+          ? const Color(0xFF1E1E1E)
+          : const Color.fromARGB(255, 254, 215, 97),
       child: InkWell(
         onTap: () {
           // Otevře příslušnou obrazovku
@@ -594,7 +636,11 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 32, color: isDarkMode ? Colors.white : Colors.black),
+              Icon(
+                icon,
+                size: 32,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
               const SizedBox(height: 8),
               Text(
                 title,
@@ -627,7 +673,9 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 12),
         Card(
           elevation: 2,
-          color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 254, 215, 97),
+          color: isDarkMode
+              ? const Color(0xFF1E1E1E)
+              : const Color.fromARGB(255, 254, 215, 97),
           child: const Padding(
             padding: EdgeInsets.all(16),
             child: Column(
@@ -660,7 +708,9 @@ class _HomeScreenState extends State<HomeScreen> {
         const SizedBox(height: 12),
         Card(
           elevation: 2,
-          color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 254, 215, 97),
+          color: isDarkMode
+              ? const Color(0xFF1E1E1E)
+              : const Color.fromARGB(255, 254, 215, 97),
           child: const Padding(
             padding: EdgeInsets.all(16),
             child: Column(
