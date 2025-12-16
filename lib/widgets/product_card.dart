@@ -20,7 +20,8 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final expDate = product.expirationDate;
     final expirationStatus = _getExpirationStatus(expDate);
     
@@ -51,7 +52,7 @@ class ProductCard extends StatelessWidget {
       direction: DismissDirection.endToStart,
       background: Container(
         decoration: BoxDecoration(
-          color: Colors.red,
+          color: colors.error,
           borderRadius: BorderRadius.circular(16),
         ),
         alignment: Alignment.centerRight,
@@ -69,11 +70,11 @@ class ProductCard extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 2,
-          color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 255, 250, 234),
+          color: colors.surface,
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              border: _getBorderForExpirationStatus(expirationStatus),
+              border: _getBorderForExpirationStatus(expirationStatus, colors),
             ),
             child: Padding(
               padding: const EdgeInsets.all(12),
@@ -84,13 +85,13 @@ class ProductCard extends StatelessWidget {
                     width: 4,
                     height: 60,
                     decoration: BoxDecoration(
-                      color: _getColorForExpirationStatus(expirationStatus, typeColor),
+                      color: _getColorForExpirationStatus(expirationStatus, typeColor, colors),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                   const SizedBox(width: 12),
 
-                  _buildProductImage(typeIcon, typeColor, localImagePath),
+                  _buildProductImage(typeIcon, typeColor, localImagePath, colors),
                   const SizedBox(width: 12),
 
                   Expanded(
@@ -105,7 +106,7 @@ class ProductCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: isDarkMode ? Colors.white : Colors.black,
+                                  color: colors.onSurface,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
@@ -115,7 +116,7 @@ class ProductCard extends StatelessWidget {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: _getStatusColor(expirationStatus),
+                                  color: _getStatusColor(expirationStatus, colors),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -134,26 +135,26 @@ class ProductCard extends StatelessWidget {
                           '$type • $location',
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                            color: colors.onSurface.withOpacity(0.6),
                           ),
                         ),
                         const SizedBox(height: 6),
                         Row(
                           children: [
-                            Icon(Icons.scale, size: 14, color: Colors.orange[700]),
+                            Icon(Icons.scale, size: 14, color: colors.primary),
                             const SizedBox(width: 4),
                             Text(
                               '${product.quantity} $unit',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isDarkMode ? Colors.white : Colors.black,
+                                color: colors.onSurface,
                               ),
                             ),
                             const SizedBox(width: 12),
                             Icon(
                               Icons.schedule, 
                               size: 14, 
-                              color: _getIconColor(expirationStatus),
+                              color: _getIconColor(expirationStatus, colors),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -162,7 +163,7 @@ class ProductCard extends StatelessWidget {
                                 : '—',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: _getTextColor(expirationStatus),
+                                color: _getTextColor(expirationStatus, colors),
                                 fontWeight: expirationStatus == 'soon' ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
@@ -175,7 +176,7 @@ class ProductCard extends StatelessWidget {
                   IconButton(
                     icon: Icon(
                       Icons.more_vert, 
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600]
+                      color: colors.onSurface.withOpacity(0.6)
                     ),
                     onPressed: onEdit,
                   ),
@@ -205,16 +206,16 @@ class ProductCard extends StatelessWidget {
   }
 
   // BARVY PODLE STAVU EXPIRACE
-  Color _getColorForExpirationStatus(String status, Color typeColor) {
+  Color _getColorForExpirationStatus(String status, Color typeColor, ColorScheme colors) {
     switch (status) {
       case 'expired':
-        return Colors.red;
+        return colors.error;
       case 'today':
-        return Colors.orange;
+        return colors.primary;
       case 'soon':
-        return Colors.orange;
+        return colors.primary;
       case 'fresh':
-        return Colors.green;
+        return colors.secondary;
       case 'noDate':
         return typeColor;
       default:
@@ -222,54 +223,54 @@ class ProductCard extends StatelessWidget {
     }
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(String status, ColorScheme colors) {
     switch (status) {
       case 'expired':
-        return Colors.red;
+        return colors.error;
       case 'today':
-        return Colors.orange;
+        return colors.primary;
       case 'soon':
-        return Colors.orange;
+        return colors.primary;
       case 'fresh':
-        return Colors.green;
+        return colors.secondary;
       case 'noDate':
-        return Colors.grey;
+        return colors.onSurface.withOpacity(0.5);
       default:
-        return Colors.grey;
+        return colors.onSurface.withOpacity(0.5);
     }
   }
 
-  Color _getIconColor(String status) {
+  Color _getIconColor(String status, ColorScheme colors) {
     switch (status) {
       case 'expired':
-        return Colors.red;
+        return colors.error;
       case 'today':
-        return Colors.orange;
+        return colors.primary;
       case 'soon':
-        return Colors.orange;
+        return colors.primary;
       case 'fresh':
-        return Colors.green;
+        return colors.secondary;
       case 'noDate':
-        return Colors.grey;
+        return colors.onSurface.withOpacity(0.5);
       default:
-        return Colors.grey;
+        return colors.onSurface.withOpacity(0.5);
     }
   }
 
-  Color _getTextColor(String status) {
+  Color _getTextColor(String status, ColorScheme colors) {
     switch (status) {
       case 'expired':
-        return Colors.red;
+        return colors.error;
       case 'today':
-        return Colors.orange;
+        return colors.primary;
       case 'soon':
-        return Colors.orange;
+        return colors.primary;
       case 'fresh':
-        return Colors.green;
+        return colors.secondary;
       case 'noDate':
-        return Colors.grey[700]!;
+        return colors.onSurface.withOpacity(0.7);
       default:
-        return Colors.grey[700]!;
+        return colors.onSurface.withOpacity(0.7);
     }
   }
 
@@ -290,14 +291,14 @@ class ProductCard extends StatelessWidget {
     }
   }
 
-  Border? _getBorderForExpirationStatus(String status) {
+  Border? _getBorderForExpirationStatus(String status, ColorScheme colors) {
     switch (status) {
       case 'expired':
-        return Border.all(color: Colors.red, width: 2);
+        return Border.all(color: colors.error, width: 2);
       case 'today':
-        return Border.all(color: Colors.orange, width: 1);
+        return Border.all(color: colors.primary, width: 1);
       case 'soon':
-        return Border.all(color: Colors.orange, width: 1);
+        return Border.all(color: colors.primary, width: 1);
       case 'fresh':
       case 'noDate':
         return null;
@@ -306,7 +307,7 @@ class ProductCard extends StatelessWidget {
     }
   }
 
-  Widget _buildProductImage(IconData icon, Color color, String? localImagePath) {
+  Widget _buildProductImage(IconData icon, Color color, String? localImagePath, ColorScheme colors) {
     if (localImagePath != null && localImagePath.isNotEmpty) {
       return Container(
         width: 50,
@@ -325,15 +326,16 @@ class ProductCard extends StatelessWidget {
       width: 50,
       height: 50,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: colors.primary.withOpacity(0.12),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: colors.primary.withOpacity(0.4), width: 1),
       ),
       child: Icon(icon, color: color, size: 24),
     );
   }
 
   Future<bool> _showDeleteConfirmation(BuildContext context, String productName) async {
+    final colors = Theme.of(context).colorScheme;
     return await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -345,7 +347,7 @@ class ProductCard extends StatelessWidget {
             child: const Text('Zrušit'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: colors.error),
             onPressed: () => Navigator.pop(context, true),
             child: const Text('Smazat', style: TextStyle(color: Colors.white)),
           ),

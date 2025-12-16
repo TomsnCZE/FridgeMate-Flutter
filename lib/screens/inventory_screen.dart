@@ -278,8 +278,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     icon: const Icon(Icons.filter_list),
                     label: const Text('Filtrovat produkty'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
-                      foregroundColor: theme.colorScheme.onSurface,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      foregroundColor: Theme.of(context).colorScheme.onSurface,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     onPressed: _showFilterSheet,
@@ -289,7 +289,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 IconButton(
                   icon: Icon(
                     _viewMode == 'list' ? Icons.grid_view : Icons.view_list,
-                    color: const Color(0xFFEC9B05),
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   onPressed: _toggleViewMode,
                   tooltip: _viewMode == 'list' ? 'Zobrazit jako mřížku' : 'Zobrazit jako seznam',
@@ -341,14 +341,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isDarkMode
-                    ? Colors.orange[900]!.withOpacity(0.3)
-                    : Colors.orange[50],
+                    ? const Color.fromARGB(255, 91, 91, 91).withOpacity(0.3)
+                    : Theme.of( context).colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.orange),
+                border: Border.all(color: Theme.of(context).colorScheme.primary),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning, color: Colors.orange[700]),
+                  Icon(Icons.warning, color: Theme.of(context).colorScheme.primary),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -356,7 +356,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                           ? '$expiredCount produktů prošlo expirací'
                           : '$expiringSoonCount produktů brzy expiruje',
                       style: TextStyle(
-                        color: Colors.orange[700],
+                        color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -431,7 +431,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
       floatingActionButton: SpeedDial(
         animatedIcon: AnimatedIcons.menu_close,
-        backgroundColor: const Color.fromARGB(255, 169, 18, 121),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
         overlayColor: Colors.black,
         overlayOpacity: 0.4,

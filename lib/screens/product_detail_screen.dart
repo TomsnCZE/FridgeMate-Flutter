@@ -45,7 +45,8 @@ class ProductDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detail produktu'),
-        backgroundColor: const Color(0xFFEC9B05),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
       ),
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
@@ -67,14 +68,14 @@ class ProductDetailScreen extends StatelessWidget {
             if (product.brand != null && product.brand!.isNotEmpty)
               Text(
                 product.brand!,
-                style: TextStyle(fontSize: 16, color: theme.hintColor),
+                style: TextStyle(fontSize: 16, color: theme.textTheme.bodyMedium?.color),
               ),
 
             const SizedBox(height: 12),
 
             Row(
               children: [
-                Icon(Icons.category, color: Colors.orange),
+                Icon(Icons.category, color: theme.colorScheme.primary),
                 const SizedBox(width: 6),
                 Text(
                   'Kategorie: ${product.category}',
@@ -90,7 +91,7 @@ class ProductDetailScreen extends StatelessWidget {
 
             Row(
               children: [
-                Icon(Icons.fastfood, color: Colors.orange),
+                Icon(Icons.fastfood, color: theme.colorScheme.primary),
                 const SizedBox(width: 6),
                 Text(
                   'Typ: $type',
@@ -106,7 +107,7 @@ class ProductDetailScreen extends StatelessWidget {
 
             Row(
               children: [
-                Icon(Icons.local_fire_department, color: Colors.orange),
+                Icon(Icons.local_fire_department, color: theme.colorScheme.primary),
                 const SizedBox(width: 6),
                 Text(
                   'Kalorie: $calories kcal / 100g',
@@ -181,12 +182,6 @@ class ProductDetailScreen extends StatelessWidget {
                   },
                 ),
                 OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                  ),
                   icon: const Icon(Icons.close),
                   label: const Text('Zavřít'),
                   onPressed: () {

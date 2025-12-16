@@ -19,34 +19,7 @@ class Product {
     this.extra,
   });
 
-  // JSON (stávající)
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'imageUrl': imageUrl,
-        'brand': brand,
-        'category': category,
-        'expirationDate': expirationDate?.toIso8601String(),
-        'quantity': quantity,
-        'extra': extra,
-      };
-
-  factory Product.fromJson(Map<String, dynamic> json) => Product(
-        id: json['id'],
-        name: json['name'],
-        imageUrl: json['imageUrl'],
-        brand: json['brand'],
-        category: json['category'],
-        expirationDate: json['expirationDate'] != null
-            ? DateTime.parse(json['expirationDate'])
-            : null,
-        quantity: (json['quantity'] ?? 1).toDouble(),
-        extra: json['extra'] != null
-            ? Map<String, dynamic>.from(json['extra'])
-            : null,
-      );
-
-  // SQLite map
+  /// ⬇️⬇️⬇️ TOHLE JE KLÍČOVÉ
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -61,19 +34,20 @@ class Product {
     };
   }
 
+  /// ⬇️⬇️⬇️ A TADY SE TO MUSÍ VRÁTIT ZPÁTKY
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
-      id: map['id'],
+      id: map['id'] as int?,
       name: map['name'],
       brand: map['brand'],
-      category: map['category'],
-      quantity: (map['quantity'] ?? 1).toDouble(),
+      category: map['category'] ?? 'Lednice',
+      quantity: (map['quantity'] as num?)?.toDouble() ?? 1.0,
       expirationDate: map['expirationDate'] != null
-          ? DateTime.parse(map['expirationDate'])
+          ? DateTime.tryParse(map['expirationDate'])
           : null,
       extra: {
-        'unit': map['unit'],
-        'type': map['type'],
+        'unit': map['unit'] ?? 'ks',
+        'type': map['type'] ?? 'Jídlo',
         'localImagePath': map['localImagePath'],
       },
     );

@@ -15,7 +15,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
+    final colors = theme.colorScheme;
     
     final isExpired = product.expirationDate != null &&
         product.expirationDate!.isBefore(DateTime.now());
@@ -34,7 +34,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.cardColor,
+        color: colors.surface,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -54,11 +54,11 @@ class ProductDetailBottomSheet extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
+                  color: colors.onSurface,
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
+                icon: Icon(Icons.close, color: colors.onSurface),
                 onPressed: () => Navigator.pop(context),
               ),
             ],
@@ -73,7 +73,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
               height: 120,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: isDarkMode ? Colors.grey[800] : Colors.grey[100],
+                color: colors.surfaceVariant,
               ),
               child: hasImage
                   ? ClipRRect(
@@ -87,11 +87,11 @@ class ProductDetailBottomSheet extends StatelessWidget {
                               product.imageUrl!,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                return _buildNoImagePlaceholder(isDarkMode);
+                                return _buildNoImagePlaceholder(colors);
                               },
                             ),
                     )
-                  : _buildNoImagePlaceholder(isDarkMode),
+                  : _buildNoImagePlaceholder(colors),
             ),
           ),
 
@@ -104,7 +104,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface,
+                color: colors.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
@@ -117,7 +117,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
                 product.brand!,
                 style: TextStyle(
                   fontSize: 16,
-                  color: theme.hintColor,
+                  color: colors.onSurface.withOpacity(0.6),
                 ),
               ),
             ),
@@ -180,7 +180,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
+              color: colors.onSurface,
             ),
           ),
           const SizedBox(height: 8),
@@ -188,7 +188,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
             ingredients ?? 'Neuvedeno',
             style: TextStyle(
               fontSize: 14,
-              color: theme.colorScheme.onSurface.withOpacity(0.8),
+              color: colors.onSurface.withOpacity(0.8),
             ),
           ),
 
@@ -201,18 +201,18 @@ class ProductDetailBottomSheet extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isExpired 
-                    ? Colors.red[isDarkMode ? 900 : 50] 
-                    : Colors.orange[isDarkMode ? 900 : 50],
+                    ? colors.error.withOpacity(0.12) 
+                    : colors.primary.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: isExpired ? Colors.red : Colors.orange,
+                  color: isExpired ? colors.error : colors.primary,
                 ),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.warning,
-                    color: isExpired ? Colors.red : Colors.orange,
+                    color: isExpired ? colors.error : colors.primary,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -221,7 +221,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
                           ? 'Produkt prošel expirací!'
                           : 'Produkt brzy expiruje!',
                       style: TextStyle(
-                        color: isExpired ? Colors.red : Colors.orange,
+                        color: isExpired ? colors.error : colors.primary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -234,20 +234,20 @@ class ProductDetailBottomSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildNoImagePlaceholder(bool isDarkMode) {
+  Widget _buildNoImagePlaceholder(ColorScheme colors) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Icon(
           Icons.photo_camera, 
           size: 40, 
-          color: isDarkMode ? Colors.grey[600] : Colors.grey[400]
+          color: colors.onSurface.withOpacity(0.4)
         ),
         const SizedBox(height: 8),
         Text(
           'Žádná fotka',
           style: TextStyle(
-            color: isDarkMode ? Colors.grey[600] : Colors.grey[500]
+            color: colors.onSurface.withOpacity(0.4)
           ),
         ),
       ],
@@ -262,6 +262,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
     bool isWarning = false,
     String? warningText,
   }) {
+    final colors = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -270,7 +271,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
           Icon(
             icon,
             size: 20,
-            color: isWarning ? Colors.orange : theme.hintColor,
+            color: isWarning ? colors.primary : colors.onSurface.withOpacity(0.6),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -281,7 +282,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
                   title,
                   style: TextStyle(
                     fontSize: 14,
-                    color: theme.hintColor,
+                    color: colors.onSurface.withOpacity(0.6),
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -293,8 +294,8 @@ class ProductDetailBottomSheet extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           color: isWarning 
-                              ? Colors.orange 
-                              : theme.colorScheme.onSurface,
+                              ? colors.primary 
+                              : colors.onSurface,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -303,14 +304,14 @@ class ProductDetailBottomSheet extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withOpacity(0.1),
+                          color: colors.primary.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           warningText,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: Colors.orange,
+                            color: colors.primary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

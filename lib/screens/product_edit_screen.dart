@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/product.dart';
 import '../services/database_service.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 class EditProductScreen extends StatefulWidget {
   final Product product;
 
-  const EditProductScreen({
-    super.key,
-    required this.product,
-  });
+  const EditProductScreen({super.key, required this.product});
 
   @override
   State<EditProductScreen> createState() => _EditProductScreenState();
@@ -28,6 +27,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   DateTime? _expirationDate;
   File? _selectedImage;
   String? _originalImagePath;
+  String? _savedImagePath;
 
   final List<String> _units = ['ks', 'g', 'kg', 'ml', 'l'];
   final List<String> _categories = ['Lednice', 'Mrazák', 'Spíž'];
@@ -45,10 +45,24 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _expirationDate = widget.product.expirationDate;
 
     final originalPath = widget.product.extra?['localImagePath'];
-    if (originalPath != null && originalPath.isNotEmpty) {
+    if (originalPath != null &&
+        originalPath.isNotEmpty &&
+        File(originalPath).existsSync()) {
       _originalImagePath = originalPath;
+      _savedImagePath = originalPath;
       _selectedImage = File(originalPath);
+    } else {
+      _originalImagePath = null;
+      _selectedImage = null;
     }
+  }
+
+  Future<File> _saveImagePermanently(String sourcePath) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final fileName =
+        'product_${DateTime.now().millisecondsSinceEpoch}${p.extension(sourcePath)}';
+    final newPath = p.join(dir.path, fileName);
+    return File(sourcePath).copy(newPath);
   }
 
   Future<void> _takePhoto() async {
@@ -60,8 +74,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
       );
 
       if (photo != null && mounted) {
+        final savedImage = await _saveImagePermanently(photo.path);
         setState(() {
-          _selectedImage = File(photo.path);
+          _selectedImage = savedImage;
+          _savedImagePath = savedImage.path;
         });
       }
     } catch (e) {
@@ -78,8 +94,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
       );
 
       if (image != null && mounted) {
+        final savedImage = await _saveImagePermanently(image.path);
         setState(() {
-          _selectedImage = File(image.path);
+          _selectedImage = savedImage;
+          _savedImagePath = savedImage.path;
         });
       }
     } catch (e) {
@@ -90,6 +108,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   void _removeImage() {
     setState(() {
       _selectedImage = null;
+      _savedImagePath = null;
     });
   }
 
@@ -114,20 +133,25 @@ class _EditProductScreenState extends State<EditProductScreen> {
     final updatedProduct = Product(
       id: widget.product.id,
       name: _nameController.text.trim(),
-      brand: _brandController.text.trim().isEmpty ? null : _brandController.text.trim(),
+      brand: _brandController.text.trim().isEmpty
+          ? null
+          : _brandController.text.trim(),
       category: _category,
       quantity: quantity,
       expirationDate: _expirationDate,
       extra: {
         'unit': _unit,
         'type': _type,
-        'localImagePath': _selectedImage?.path ?? _originalImagePath,
+        'localImagePath': _savedImagePath ?? _originalImagePath,
       },
     );
 
     // UPDATE in DB
     if (widget.product.id != null) {
-      await DatabaseService.instance.updateProduct(widget.product.id!, updatedProduct.toMap());
+      await DatabaseService.instance.updateProduct(
+        widget.product.id!,
+        updatedProduct.toMap(),
+      );
     }
 
     if (!mounted) return;
@@ -141,11 +165,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
         title: const Text('Smazat produkt?'),
         content: Text('Opravdu chceš smazat "${widget.product.name}"?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Zrušit')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Zrušit'),
+          ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Smazat', style: TextStyle(color: Colors.white)),
+            child: const Text('Smazat'),
           ),
         ],
       ),
@@ -173,12 +199,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Upravit produkt'),
-        backgroundColor: const Color(0xFFEC9B05),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.red),
-            onPressed: _deleteProduct,
-          ),
+          IconButton(icon: const Icon(Icons.delete), onPressed: _deleteProduct),
           IconButton(
             icon: const Icon(Icons.close),
             onPressed: () => Navigator.pop(context),
@@ -202,7 +224,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   labelText: 'Název produktu *',
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Zadej název' : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Zadej název' : null,
               ),
               const SizedBox(height: 16),
 
@@ -246,7 +269,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         border: OutlineInputBorder(),
                       ),
                       items: _units
-                          .map((u) => DropdownMenuItem(value: u, child: Text(u)))
+                          .map(
+                            (u) => DropdownMenuItem(value: u, child: Text(u)),
+                          )
                           .toList(),
                       onChanged: (v) => setState(() => _unit = v ?? 'ks'),
                     ),
@@ -318,11 +343,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFEC9B05),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
                       onPressed: _submit,
                       child: const Text('Uložit'),
                     ),
@@ -367,7 +387,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   backgroundColor: Colors.black54,
                   radius: 20,
                   child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close),
                     onPressed: _removeImage,
                   ),
                 ),
@@ -389,10 +409,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.camera_alt),
                   label: const Text('Fotoaparát'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEC9B05),
-                    foregroundColor: Colors.white,
-                  ),
                   onPressed: _takePhoto,
                 ),
               ),
@@ -406,7 +422,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
               'Použije se původní fotka',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: Theme.of(context).hintColor,
                 fontStyle: FontStyle.italic,
               ),
             ),

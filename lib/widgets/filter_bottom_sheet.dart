@@ -142,8 +142,8 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                 child: ElevatedButton(
                   onPressed: _applyFilters,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEC9B05),
-                    foregroundColor: Colors.white,
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text('Použít filtry'),
@@ -165,7 +165,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
     required Function(String) onChanged,
     required ThemeData theme,
   }) {
-    final isDarkMode = theme.brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,12 +187,12 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               label: Text(option),
               selected: isSelected,
               onSelected: (selected) => onChanged(option),
-              backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[100],
-              selectedColor: const Color(0xFFEC9B05).withOpacity(0.2),
-              checkmarkColor: const Color(0xFFEC9B05),
+              backgroundColor: theme.colorScheme.surfaceVariant,
+              selectedColor: theme.colorScheme.primary.withOpacity(0.2),
+              checkmarkColor: theme.colorScheme.primary,
               labelStyle: TextStyle(
-                color: isSelected 
-                    ? Colors.black 
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
                     : theme.colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

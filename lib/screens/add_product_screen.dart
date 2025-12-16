@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/product.dart';
 import '../services/database_service.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 class AddProductScreen extends StatefulWidget {
   final Product? existingProduct;
@@ -24,6 +26,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   String _type = 'Jídlo';
   DateTime? _expirationDate;
   File? _selectedImage;
+  String? _savedImagePath;
 
   final List<String> _units = ['ks', 'g', 'kg', 'ml', 'l'];
   final List<String> _categories = ['Lednice', 'Mrazák', 'Spíž'];
@@ -43,48 +46,63 @@ class _AddProductScreenState extends State<AddProductScreen> {
       _type = p.extra?['type'] ?? 'Jídlo';
       _expirationDate = p.expirationDate;
 
-      if (p.extra?['localImagePath'] != null) {
-        _selectedImage = File(p.extra!['localImagePath']);
+      final imagePath = p.extra?['localImagePath'];
+      if (imagePath != null && File(imagePath).existsSync()) {
+        _selectedImage = File(imagePath);
+        _savedImagePath = imagePath;
       }
     } else {
       _quantityController.text = '1';
     }
   }
 
-  Future<void> _takePhoto() async {
-    try {
-      final XFile? photo = await ImagePicker().pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1200,
-        imageQuality: 85,
-      );
+  Future<File> _saveImagePermanently(String sourcePath) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final fileName =
+        'product_${DateTime.now().millisecondsSinceEpoch}${p.extension(sourcePath)}';
+    final newPath = p.join(dir.path, fileName);
+    return File(sourcePath).copy(newPath);
+  }
 
-      if (photo != null && mounted) {
-        setState(() => _selectedImage = File(photo.path));
-      }
-    } catch (e) {
-      print('❌ Chyba při focení: $e');
-    }
+  Future<void> _takePhoto() async {
+    final XFile? photo = await ImagePicker().pickImage(
+      source: ImageSource.camera,
+      maxWidth: 1200,
+      imageQuality: 85,
+    );
+
+    if (photo == null) return;
+
+    final saved = await _saveImagePermanently(photo.path);
+
+    setState(() {
+      _selectedImage = saved;
+      _savedImagePath = saved.path;
+    });
   }
 
   Future<void> _pickFromGallery() async {
-    try {
-      final XFile? img = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 1200,
-        imageQuality: 85,
-      );
+    final XFile? img = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1200,
+      imageQuality: 85,
+    );
 
-      if (img != null && mounted) {
-        setState(() => _selectedImage = File(img.path));
-      }
-    } catch (e) {
-      print('❌ Chyba galerie: $e');
-    }
+    if (img == null) return;
+
+    final saved = await _saveImagePermanently(img.path);
+
+    setState(() {
+      _selectedImage = saved;
+      _savedImagePath = saved.path;
+    });
   }
 
   void _removeImage() {
-    setState(() => _selectedImage = null);
+    setState(() {
+      _selectedImage = null;
+      _savedImagePath = null;
+    });
   }
 
   Future<void> _selectDate() async {
@@ -118,11 +136,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
       extra: {
         'unit': _unit,
         'type': _type,
-        'localImagePath': _selectedImage?.path,
+        'localImagePath': _savedImagePath,
       },
     );
 
-if (widget.existingProduct == null || widget.existingProduct!.id == null) {
+    if (widget.existingProduct == null || widget.existingProduct!.id == null) {
       // INSERT
       final int newId = await DatabaseService.instance.insertProduct(
         product.toMap(),
@@ -174,7 +192,7 @@ if (widget.existingProduct == null || widget.existingProduct!.id == null) {
         title: Text(
           widget.existingProduct == null ? 'Přidat produkt' : 'Upravit produkt',
         ),
-        backgroundColor: const Color(0xFFEC9B05),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
             icon: const Icon(Icons.close),
@@ -301,8 +319,8 @@ if (widget.existingProduct == null || widget.existingProduct!.id == null) {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEC9B05),
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   onPressed: _submit,
@@ -372,8 +390,8 @@ if (widget.existingProduct == null || widget.existingProduct!.id == null) {
                   icon: const Icon(Icons.camera_alt),
                   label: const Text("Foto"),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFEC9B05),
-                    foregroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
               ),

@@ -20,7 +20,6 @@ class ProductGridCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final expDate = product.expirationDate;
     final expirationStatus = _getExpirationStatus(expDate);
 
@@ -29,19 +28,22 @@ class ProductGridCard extends StatelessWidget {
     final location = product.extra?['location'] ?? 'Neznámé';
     final localImagePath = product.extra?['localImagePath'];
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     Color typeColor;
     IconData typeIcon;
+
     switch (type) {
       case 'Pití':
-        typeColor = Colors.blueAccent;
+        typeColor = colorScheme.primary;
         typeIcon = Icons.local_drink_outlined;
         break;
       case 'Ostatní':
-        typeColor = Colors.grey;
+        typeColor = colorScheme.secondary;
         typeIcon = Icons.category_outlined;
         break;
       default:
-        typeColor = Colors.orange;
+        typeColor = colorScheme.primary;
         typeIcon = Icons.fastfood_outlined;
     }
 
@@ -88,11 +90,11 @@ class ProductGridCard extends StatelessWidget {
           margin: const EdgeInsets.all(8),
           elevation: 2,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          color: isDarkMode ? const Color(0xFF1E1E1E) : const Color.fromARGB(255, 255, 250, 234),
+          color: Theme.of(context).cardColor,
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              border: _getBorderForExpirationStatus(expirationStatus), // ← PŘIDÁNO OH RANČENÍ
+              border: _getBorderForExpirationStatus(expirationStatus, context),
             ),
             child: Padding(
               padding: const EdgeInsets.all(12),
@@ -104,7 +106,7 @@ class ProductGridCard extends StatelessWidget {
                     height: 80,
                     width: double.infinity,
                     margin: const EdgeInsets.only(bottom: 8),
-                    child: _buildProductImage(typeIcon, typeColor, localImagePath),
+                    child: _buildProductImage(typeIcon, typeColor, localImagePath, context),
                   ),
                   
                   // Čára
@@ -112,7 +114,7 @@ class ProductGridCard extends StatelessWidget {
                     height: 4,
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
-                      color: _getColorForExpirationStatus(expirationStatus, typeColor),
+                      color: _statusColor(expirationStatus, context),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -126,7 +128,7 @@ class ProductGridCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: isDarkMode ? Colors.white : Colors.black,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -136,7 +138,7 @@ class ProductGridCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: _getStatusColor(expirationStatus),
+                            color: _statusColor(expirationStatus, context),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -158,7 +160,7 @@ class ProductGridCard extends StatelessWidget {
                     '$type • $location',
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      color: Theme.of(context).hintColor,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -180,7 +182,7 @@ class ProductGridCard extends StatelessWidget {
                               '${product.quantity} $unit',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: isDarkMode ? Colors.white : Colors.black,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
@@ -197,7 +199,7 @@ class ProductGridCard extends StatelessWidget {
                           Icon(
                             Icons.schedule,
                             size: 12,
-                            color: _getIconColor(expirationStatus),
+                            color: _statusColor(expirationStatus, context),
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -207,7 +209,7 @@ class ProductGridCard extends StatelessWidget {
                                   : '—',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: _getTextColor(expirationStatus),
+                                color: _statusColor(expirationStatus, context),
                                 fontWeight: expirationStatus == 'soon'
                                     ? FontWeight.w600
                                     : FontWeight.normal,
@@ -229,25 +231,19 @@ class ProductGridCard extends StatelessWidget {
     );
   }
 
-  // PŘIDAT METODY PRO OH RANČENÍ:
-
-  Border? _getBorderForExpirationStatus(String status) {
+  Border? _getBorderForExpirationStatus(String status, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     switch (status) {
       case 'expired':
-        return Border.all(color: Colors.red, width: 2);
+        return Border.all(color: cs.error, width: 2);
       case 'today':
-        return Border.all(color: Colors.orange, width: 1);
       case 'soon':
-        return Border.all(color: Colors.orange, width: 1);
-      case 'fresh':
-      case 'noDate':
-        return null;
+        return Border.all(color: Theme.of(context).colorScheme.primary, width: 1);
       default:
         return null;
     }
   }
 
-  // ... zbytek tvých metod zůstává stejný
   String _getExpirationStatus(DateTime? expDate) {
     if (expDate == null) return 'noDate';
     final now = DateTime.now();
@@ -261,60 +257,18 @@ class ProductGridCard extends StatelessWidget {
     return 'fresh';
   }
 
-  Color _getColorForExpirationStatus(String status, Color typeColor) {
+  Color _statusColor(String status, BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     switch (status) {
       case 'expired':
-        return Colors.red;
+        return cs.error;
       case 'today':
       case 'soon':
-        return Colors.orange;
+        return Theme.of(context).colorScheme.primary;
       case 'fresh':
-        return Colors.green;
-      case 'noDate':
+        return cs.primary;
       default:
-        return typeColor;
-    }
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'expired':
-        return Colors.red;
-      case 'today':
-      case 'soon':
-        return Colors.orange;
-      case 'fresh':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Color _getIconColor(String status) {
-    switch (status) {
-      case 'expired':
-        return Colors.red;
-      case 'today':
-      case 'soon':
-        return Colors.orange;
-      case 'fresh':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  Color _getTextColor(String status) {
-    switch (status) {
-      case 'expired':
-        return Colors.red;
-      case 'today':
-      case 'soon':
-        return Colors.orange;
-      case 'fresh':
-        return Colors.green;
-      default:
-        return Colors.grey[700]!;
+        return cs.outline;
     }
   }
 
@@ -333,11 +287,11 @@ class ProductGridCard extends StatelessWidget {
     }
   }
 
-  Widget _buildProductImage(IconData icon, Color color, String? localImagePath) {
+  Widget _buildProductImage(IconData icon, Color color, String? localImagePath, BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: color.withOpacity(0.1),
+        color: Theme.of(context).colorScheme.primary.withOpacity(0.08),
       ),
       child: localImagePath != null && localImagePath.isNotEmpty
           ? ClipRRect(
@@ -365,7 +319,7 @@ class ProductGridCard extends StatelessWidget {
                 child: const Text('Zrušit'),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.error),
                 onPressed: () => Navigator.pop(context, true),
                 child: const Text('Smazat', style: TextStyle(color: Colors.white)),
               ),

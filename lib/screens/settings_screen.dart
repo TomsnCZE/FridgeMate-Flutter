@@ -89,8 +89,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Nastavení'),
-        backgroundColor: Color(0xFFEC9B05),
-        foregroundColor: Colors.black,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -104,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: Switch(
               value: _isDarkMode,
               onChanged: _toggleDarkMode,
-              activeColor: const Color(0xFFEC9B05),
+              activeColor: Theme.of(context).colorScheme.primary,
             ),
             theme: theme,
           ),
@@ -128,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: Switch(
               value: _notificationsEnabled,
               onChanged: _toggleNotifications,
-              activeColor: const Color(0xFFEC9B05),
+              activeColor: Theme.of(context).colorScheme.primary,
             ),
             theme: theme,
           ),
@@ -152,7 +152,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: Switch(
               value: _hideExpiredProducts,
               onChanged: _toggleHideExpired,
-              activeColor: const Color(0xFFEC9B05),
+              activeColor: Theme.of(context).colorScheme.primary,
             ),
             theme: theme,
           ),
@@ -260,7 +260,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: theme.cardColor,
       child: ListTile(
-        leading: Icon(icon, color: textColor ?? const Color(0xFFEC9B05)),
+        leading: Icon(icon, color: textColor ?? theme.colorScheme.primary),
         title: Text(
           title,
           style: TextStyle(
@@ -312,7 +312,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _setViewMode(value!);
                 Navigator.pop(context);
               },
-              activeColor: const Color(0xFFEC9B05),
+              activeColor: theme.colorScheme.primary,
             ),
             RadioListTile<String>(
               title: Row(
@@ -331,7 +331,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _setViewMode(value!);
                 Navigator.pop(context);
               },
-              activeColor: const Color(0xFFEC9B05),
+              activeColor: theme.colorScheme.primary,
             ),
           ],
         ),
@@ -365,7 +365,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _setExpirationDays(value!);
                   Navigator.pop(context);
                 },
-                activeColor: const Color(0xFFEC9B05),
+                activeColor: theme.colorScheme.primary,
               ),
             RadioListTile<int>(
               title: Text(
@@ -378,7 +378,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _setExpirationDays(value!);
                 Navigator.pop(context);
               },
-              activeColor: const Color(0xFFEC9B05),
+              activeColor: theme.colorScheme.primary,
             ),
           ],
         ),
@@ -411,7 +411,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _setDefaultCategory(value!);
                 Navigator.pop(context);
               },
-              activeColor: const Color(0xFFEC9B05),
+              activeColor: theme.colorScheme.primary,
             );
           }).toList(),
         ),
@@ -444,7 +444,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _setDefaultUnit(value!);
                 Navigator.pop(context);
               },
-              activeColor: const Color(0xFFEC9B05),
+              activeColor: theme.colorScheme.primary,
             );
           }).toList(),
         ),
@@ -456,7 +456,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Data byla úspěšně zazálohována'),
-        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -466,7 +466,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Data byla obnovena ze zálohy'),
-        backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -501,7 +501,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: const Text('Všechna data byla smazána'),
-                  backgroundColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.white,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   behavior: SnackBarBehavior.floating,
                 ),
               );

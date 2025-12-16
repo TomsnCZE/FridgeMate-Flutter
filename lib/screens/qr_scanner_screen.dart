@@ -57,12 +57,12 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Skenovat čárový kód'),
-        backgroundColor: const Color(0xFFEC9B05),
+        backgroundColor: theme.colorScheme.primary,
+        foregroundColor: theme.colorScheme.onPrimary,
       ),
       body: Stack(
         children: [
@@ -87,7 +87,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
               width: 250,
               height: 250,
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.orange, width: 3),
+                border: Border.all(color: theme.colorScheme.primary, width: 3),
                 borderRadius: BorderRadius.circular(12),
                 color: Colors.transparent,
               ),
@@ -99,9 +99,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isDarkMode
-                    ? Colors.grey[900]!.withOpacity(0.9)
-                    : Colors.white.withOpacity(0.9),
+                color: theme.colorScheme.surface.withOpacity(0.95),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
@@ -112,10 +110,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
                   if (_lastScannedCode != null)
                     Text(
                       'Poslední kód: $_lastScannedCode',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: isDarkMode ? Colors.white : Colors.black,
-                      ),
+                      style: theme.textTheme.bodyLarge,
                       textAlign: TextAlign.center,
                     ),
                   const SizedBox(height: 12),
