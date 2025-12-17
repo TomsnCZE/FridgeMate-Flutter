@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Text(
                   'Menu',
                   style: TextStyle(
-                    color: widget.isDarkMode ? Colors.black : Colors.white,
+                    color: Colors.white,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),

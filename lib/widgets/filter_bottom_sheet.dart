@@ -192,7 +192,9 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               checkmarkColor: theme.colorScheme.primary,
               labelStyle: TextStyle(
                 color: isSelected
-                    ? theme.colorScheme.onPrimary
+                    ? (theme.brightness == Brightness.light
+                        ? theme.colorScheme.onSurface
+                        : theme.colorScheme.onSecondary)
                     : theme.colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

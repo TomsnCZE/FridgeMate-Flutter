@@ -158,34 +158,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
     Navigator.pop(context, updatedProduct); // return updated product
   }
 
-  Future<void> _deleteProduct() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Smazat produkt?'),
-        content: Text('Opravdu chceš smazat "${widget.product.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Zrušit'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Smazat'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      if (widget.product.id != null) {
-        await DatabaseService.instance.deleteProduct(widget.product.id!);
-      }
-      if (!mounted) return;
-      Navigator.pop(context, 'delete');
-    }
-  }
-
   @override
   void dispose() {
     _nameController.dispose();
@@ -200,7 +172,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
       appBar: AppBar(
         title: const Text('Upravit produkt'),
         actions: [
-          IconButton(icon: const Icon(Icons.delete), onPressed: _deleteProduct),
           IconButton(
             icon: const Icon(Icons.close),
             onPressed: () => Navigator.pop(context),

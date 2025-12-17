@@ -7,7 +7,6 @@ import '../widgets/product_detail_bottom_sheet.dart';
 import '../widgets/filter_bottom_sheet.dart';
 import '../screens/qr_scanner_screen.dart';
 import '../screens/add_product_screen.dart';
-import '../screens/product_edit_screen.dart';
 import '../routes/custom_routes.dart';
 import '../services/settings_service.dart';
 import '../services/database_service.dart';
@@ -106,47 +105,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  Future<void> _showEditScreen(int index) async {
-    final result = await Navigator.push(
-      context,
-      SlideRightRoute(
-        page: EditProductScreen(product: _products[index]),
-      ),
-    );
-
-    if (result != null) {
-      if (result == 'delete') {
-        await _loadProducts();
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${_products[index].name} byl smazán',
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      } else if (result is Product) {
-        await _loadProducts();
-        if (!mounted) return;
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${(result).name} byl upraven',
-              style: TextStyle(color: isDark ? Colors.white : Colors.black),
-            ),
-            backgroundColor: isDark ? Colors.grey[800] : Colors.white,
-            behavior: SnackBarBehavior.floating,
-            elevation: 6,
-          ),
-        );
-      }
-    }
-  }
-
   void _showFilterSheet() {
     showModalBottomSheet(
       context: context,
@@ -177,12 +135,19 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   List<Product> get filteredProducts {
     return _products.where((p) {
-      final matchesSearch = p.name.toLowerCase().contains(_search.toLowerCase());
-      final matchesCategory = _filterCategory == 'Vše' || p.category == _filterCategory;
-      final matchesType = _filterType == 'Vše' || (p.extra?['type'] ?? 'Jídlo') == _filterType;
+      final matchesSearch = p.name.toLowerCase().contains(
+        _search.toLowerCase(),
+      );
+      final matchesCategory =
+          _filterCategory == 'Vše' || p.category == _filterCategory;
+      final matchesType =
+          _filterType == 'Vše' || (p.extra?['type'] ?? 'Jídlo') == _filterType;
       final matchesExpiration = _checkExpirationFilter(p);
 
-      return matchesSearch && matchesCategory && matchesType && matchesExpiration;
+      return matchesSearch &&
+          matchesCategory &&
+          matchesType &&
+          matchesExpiration;
     }).toList();
   }
 
@@ -194,7 +159,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final expiration = DateTime(p.expirationDate!.year, p.expirationDate!.month, p.expirationDate!.day);
+    final expiration = DateTime(
+      p.expirationDate!.year,
+      p.expirationDate!.month,
+      p.expirationDate!.day,
+    );
 
     final difference = expiration.difference(today).inDays;
 
@@ -218,7 +187,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
     if (_filterType != 'Vše') filters.add(_filterType);
     if (_filterExpiration != 'Vše') filters.add(_filterExpiration);
 
-    return filters.isEmpty ? 'Žádné aktivní filtry' : 'Filtry: ${filters.join(', ')}';
+    return filters.isEmpty
+        ? 'Žádné aktivní filtry'
+        : 'Filtry: ${filters.join(', ')}';
   }
 
   @override
@@ -227,7 +198,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     final filtered = filteredProducts;
-    final hasActiveFilters = _filterCategory != 'Vše' || _filterType != 'Vše' || _filterExpiration != 'Vše';
+    final hasActiveFilters =
+        _filterCategory != 'Vše' ||
+        _filterType != 'Vše' ||
+        _filterExpiration != 'Vše';
 
     final expiredCount = _products
         .where(
@@ -292,7 +266,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     color: Theme.of(context).colorScheme.primary,
                   ),
                   onPressed: _toggleViewMode,
-                  tooltip: _viewMode == 'list' ? 'Zobrazit jako mřížku' : 'Zobrazit jako seznam',
+                  tooltip: _viewMode == 'list'
+                      ? 'Zobrazit jako mřížku'
+                      : 'Zobrazit jako seznam',
                 ),
               ],
             ),
@@ -314,10 +290,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   Expanded(
                     child: Text(
                       _getActiveFiltersText(),
-                      style: TextStyle(
-                        color: theme.hintColor,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: theme.hintColor, fontSize: 14),
                     ),
                   ),
                   InkWell(
@@ -342,13 +315,18 @@ class _InventoryScreenState extends State<InventoryScreen> {
               decoration: BoxDecoration(
                 color: isDarkMode
                     ? const Color.fromARGB(255, 91, 91, 91).withOpacity(0.3)
-                    : Theme.of( context).colorScheme.primary.withOpacity(0.1),
+                    : Theme.of(context).colorScheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Theme.of(context).colorScheme.primary),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.warning, color: Theme.of(context).colorScheme.primary),
+                  Icon(
+                    Icons.warning,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -398,33 +376,31 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     ),
                   )
                 : _viewMode == 'list'
-                    ? ListView.builder(
-                        itemCount: filtered.length,
-                        itemBuilder: (context, i) => ProductCard(
-                          product: filtered[i],
-                          index: _products.indexOf(filtered[i]),
-                          onEdit: () => _showEditScreen(_products.indexOf(filtered[i])),
-                          onDelete: () => _showEditScreen(_products.indexOf(filtered[i])), // open edit to delete
-                          onTap: () => _showProductDetail(filtered[i]),
-                        ),
-                      )
-                    : GridView.builder(
-                        padding: const EdgeInsets.all(12),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                ? ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, i) => ProductCard(
+                      product: filtered[i],
+                      onTap: () => _showProductDetail(filtered[i]),
+                      onChanged: _loadProducts,
+                    ),
+                  )
+                : GridView.builder(
+                    padding: const EdgeInsets.all(12),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 2,
                           crossAxisSpacing: 8,
                           mainAxisSpacing: 8,
                           childAspectRatio: 0.75,
                         ),
-                        itemCount: filtered.length,
-                        itemBuilder: (context, i) => ProductGridCard(
-                          product: filtered[i],
-                          index: _products.indexOf(filtered[i]),
-                          onEdit: () => _showEditScreen(_products.indexOf(filtered[i])),
-                          onDelete: () => _showEditScreen(_products.indexOf(filtered[i])),
-                          onTap: () => _showProductDetail(filtered[i]),
-                        ),
-                      ),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, i) => ProductGridCard(
+                      product: filtered[i],
+                      index: _products.indexOf(filtered[i]),
+                      onTap: () => _showProductDetail(filtered[i]),
+                      onChanged: _loadProducts,
+                    ),
+                  ),
           ),
         ],
       ),

@@ -28,7 +28,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
         (product.imageUrl != null && product.imageUrl!.isNotEmpty);
 
     final calories = product.extra?['calories'];
-    final ingredients = product.extra?['ingredients'];
     final type = product.extra?['type'] ?? 'Neuvedeno';
     final location = product.extra?['location'] ?? product.category;
 
@@ -124,14 +123,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // ZÁKLADNÍ INFORMACE
-          _buildInfoSection(
-            icon: Icons.category,
-            title: 'Kategorie',
-            value: product.category,
-            theme: theme,
-          ),
-
           _buildInfoSection(
             icon: Icons.location_on,
             title: 'Umístění',
@@ -173,26 +164,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
           ),
 
           const SizedBox(height: 16),
-
-          // SLOŽENÍ
-          Text(
-            'Složení:',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: colors.onSurface,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            ingredients ?? 'Neuvedeno',
-            style: TextStyle(
-              fontSize: 14,
-              color: colors.onSurface.withOpacity(0.8),
-            ),
-          ),
-
-          const SizedBox(height: 24),
 
           // STATUS INDIKÁTOR
           if (isExpired || isExpiringSoon)
