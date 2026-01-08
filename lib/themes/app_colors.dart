@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // HLAVNÍ BARVA APLIKACE
-  static const primary = Color(0xFFCD2970);
+  static const primary = Color.fromARGB(255, 239, 62, 27);
 
   // POZADÍ
   static const lightBackground = Colors.white;

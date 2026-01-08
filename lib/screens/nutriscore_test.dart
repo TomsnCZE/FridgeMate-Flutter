@@ -50,5 +50,3 @@ class NutriscoreTestScreen extends StatelessWidget {
     );
   }
 }
-
-

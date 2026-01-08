@@ -19,7 +19,6 @@ class Product {
     this.extra,
   });
 
-  /// ⬇️⬇️⬇️ TOHLE JE KLÍČOVÉ
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -34,7 +33,6 @@ class Product {
     };
   }
 
-  /// ⬇️⬇️⬇️ A TADY SE TO MUSÍ VRÁTIT ZPÁTKY
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
       id: map['id'] as int?,

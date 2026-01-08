@@ -342,8 +342,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 ],
               ),
             ),
-
-          // SEZNAM PRODUKTŮ
           Expanded(
             child: filtered.isEmpty
                 ? Center(
