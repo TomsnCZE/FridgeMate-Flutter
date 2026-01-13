@@ -14,7 +14,7 @@ class QRScannerScreen extends StatefulWidget {
 
 class _QRScannerScreenState extends State<QRScannerScreen>
     with SingleTickerProviderStateMixin {
-  bool _isScanning = true;
+  bool _isScanning = false;
   String? _lastScannedCode;
   bool _isTorchOn = false;
 
@@ -41,10 +41,16 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     super.dispose();
   }
 
-  void _resetScan() {
+  void _startScan() {
     setState(() {
       _isScanning = true;
       _lastScannedCode = null;
+    });
+  }
+
+  void _stopScan() {
+    setState(() {
+      _isScanning = false;
     });
   }
 
@@ -62,48 +68,58 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     if (!mounted) return;
 
     if (product == null) {
-      final action = await showModalBottomSheet<String>(
+      final action = await showDialog<String>(
         context: context,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
+        barrierDismissible: true,
         builder: (ctx) {
           final theme = Theme.of(ctx);
           final cs = theme.colorScheme;
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-            child: Column(
+
+          return AlertDialog(
+            backgroundColor: cs.surface,
+            surfaceTintColor: cs.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            title: Text(
+              'Produkt nebyl nalezen',
+              style: theme.textTheme.titleLarge?.copyWith(color: cs.onSurface),
+            ),
+            content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Produkt nebyl nalezen',
-                  style: theme.textTheme.headlineSmall?.copyWith(color: cs.onSurface),
-                ),
-                const SizedBox(height: 12),
-                Text(
                   'Kód: $code',
                   style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurface),
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(ctx, 'rescan'),
-                    child: const Text('Skenovat znovu'),
-                  ),
-                ),
                 const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(ctx, 'manual'),
-                    child: const Text('Přidat ručně'),
+                Text(
+                  'Chceš skenovat znovu, nebo přidat produkt ručně?',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: cs.onSurface.withOpacity(0.8),
                   ),
                 ),
               ],
             ),
+            actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            actions: [
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx, 'rescan'),
+                  child: const Text('Skenovat znovu'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx, 'manual'),
+                  child: const Text('Přidat ručně'),
+                ),
+              ),
+            ],
           );
         },
       );
@@ -122,9 +138,17 @@ class _QRScannerScreenState extends State<QRScannerScreen>
           Navigator.pop(context, insertedManual);
           return;
         }
+
+        _stopScan();
+        return;
       }
 
-      _resetScan();
+      if (action == 'rescan') {
+        _startScan();
+      } else {
+        _stopScan();
+      }
+
       return;
     }
 
@@ -138,7 +162,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     if (inserted != null) {
       Navigator.pop(context, inserted);
     } else {
-      setState(() => _isScanning = true);
+      _stopScan();
     }
   }
 
@@ -180,7 +204,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             },
           ),
 
-          // Overlay se "zatemněním" + výřezem
+          // Overlay se "zatemněním" + výřezem (jen zaoblený čtverec, bez rohů)
           CustomPaint(
             painter: _ScannerOverlayPainter(
               overlayColor: Colors.black.withOpacity(0.55),
@@ -191,7 +215,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             ),
           ),
 
-          // Scan-line (wow detail)
+          // Scan-line (indikace běžícího skenování)
           IgnorePointer(
             child: Center(
               child: SizedBox(
@@ -254,7 +278,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Namiř kameru na čárový kód.\nSkenování proběhne automaticky.',
+                        'Namiř kameru na čárový kód.\nSkenování spustíš tlačítkem níže.',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: cs.onSurface,
                           height: 1.2,
@@ -282,7 +306,9 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                 ),
                 child: Text(
                   _lastScannedCode == null
-                      ? (_isScanning ? 'Připraveno ke skenování' : 'Načítám…')
+                      ? (_isScanning
+                          ? 'Skenování běží…'
+                          : 'Stiskni „Spustit skenování“')
                       : 'Poslední kód: $_lastScannedCode',
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: cs.onSurface,
@@ -293,7 +319,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             ),
           ),
 
-          // Spodní panel
+          // Spodní panel: jen Start/Stop
           Positioned(
             left: 0,
             right: 0,
@@ -308,24 +334,19 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(color: cs.outlineVariant.withOpacity(0.6)),
                 ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: _resetScan,
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Reset'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back),
-                        label: const Text('Zpět'),
-                      ),
-                    ),
-                  ],
+                child: SizedBox(
+                  width: double.infinity,
+                  child: _isScanning
+                      ? OutlinedButton.icon(
+                          onPressed: _stopScan,
+                          icon: const Icon(Icons.pause),
+                          label: const Text('Zastavit skenování'),
+                        )
+                      : ElevatedButton.icon(
+                          onPressed: _startScan,
+                          icon: const Icon(Icons.play_arrow),
+                          label: const Text('Spustit skenování'),
+                        ),
                 ),
               ),
             ),
@@ -369,43 +390,15 @@ class _ScannerOverlayPainter extends CustomPainter {
     // overlay s dírou
     final overlayPath = Path()..addRect(Offset.zero & size);
     final cutOutPath = Path()..addRRect(cutOutRRect);
-    final finalPath = Path.combine(PathOperation.difference, overlayPath, cutOutPath);
+    final finalPath =
+        Path.combine(PathOperation.difference, overlayPath, cutOutPath);
     canvas.drawPath(finalPath, paint);
 
-    // rám okna
     final borderPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = borderWidth
       ..color = borderColor;
     canvas.drawRRect(cutOutRRect, borderPaint);
-
-    // rohy
-    final cornerPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = borderWidth
-      ..strokeCap = StrokeCap.round
-      ..color = borderColor;
-
-    const double cornerLen = 26;
-
-    void corner(Offset a, Offset b) => canvas.drawLine(a, b, cornerPaint);
-
-    final left = cutOutRect.left;
-    final right = cutOutRect.right;
-    final top = cutOutRect.top;
-    final bottom = cutOutRect.bottom;
-
-    corner(Offset(left, top + cornerLen), Offset(left, top));
-    corner(Offset(left, top), Offset(left + cornerLen, top));
-
-    corner(Offset(right - cornerLen, top), Offset(right, top));
-    corner(Offset(right, top), Offset(right, top + cornerLen));
-
-    corner(Offset(left, bottom - cornerLen), Offset(left, bottom));
-    corner(Offset(left, bottom), Offset(left + cornerLen, bottom));
-
-    corner(Offset(right - cornerLen, bottom), Offset(right, bottom));
-    corner(Offset(right, bottom - cornerLen), Offset(right, bottom));
   }
 
   @override

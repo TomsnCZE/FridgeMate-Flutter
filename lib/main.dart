@@ -110,8 +110,58 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Menu',
+            elevation: 10,
+            offset: const Offset(0, 10),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+            color: Theme.of(context).colorScheme.surface, // ladí s tématem
+            constraints: const BoxConstraints(minWidth: 220),
+            onSelected: (value) {
+              switch (value) {
+                case 'settings':
+                  _openSettingsScreen(context);
+                  break;
+                case 'about':
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AboutScreen(),
+                    ),
+                  );
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'settings',
+                height: 48, // výška položky
+                child: const ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                  leading: Icon(Icons.settings),
+                  title: Text('Nastavení'),
+                ),
+              ),
+              const PopupMenuDivider(height: 1, color: Color.fromRGBO(153, 153, 153, 0.102)),
+              PopupMenuItem<String>(
+                value: 'about',
+                height: 48,
+                child: const ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                  leading: Icon(Icons.info_outline),
+                  title: Text('O aplikaci'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
-
       drawerEnableOpenDragGesture: true,
       drawer: Drawer(
         elevation: 16,
@@ -169,26 +219,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Nastavení'),
-              onTap: () {
-                Navigator.pop(context);
-                _openSettingsScreen(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('O aplikaci'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AboutScreen()),
-                );
-              },
-            ),
           ],
         ),
       ),
@@ -198,121 +228,21 @@ class _HomeScreenState extends State<HomeScreen> {
         child: pages[_tabIndex],
       ),
 
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _tabIndex,
+        onDestinationSelected: (index) => setState(() => _tabIndex = index),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Domů',
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          currentIndex: _tabIndex,
-          onTap: (index) => setState(() => _tabIndex = index),
-          selectedItemColor: Theme.of(context).colorScheme.primary,
-          unselectedItemColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-          showSelectedLabels: true,
-          showUnselectedLabels: true,
-          selectedLabelStyle: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 12,
+          NavigationDestination(
+            icon: Icon(Icons.inventory_2_outlined),
+            selectedIcon: Icon(Icons.inventory_2),
+            label: 'Sklad',
           ),
-          unselectedLabelStyle: const TextStyle(fontSize: 12),
-          items: [
-            BottomNavigationBarItem(
-              icon: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutBack,
-                padding: const EdgeInsets.all(6),
-                child: Transform.translate(
-                  offset: Offset(0, _tabIndex == 0 ? -4 : 0),
-                  child: AnimatedScale(
-                    scale: _tabIndex == 0 ? 1.2 : 1.0,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutBack,
-                    child: Icon(
-                      Icons.home_outlined,
-                      size: 26,
-                      color: _tabIndex == 0
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                    ),
-                  ),
-                ),
-              ),
-              activeIcon: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutBack,
-                padding: const EdgeInsets.all(6),
-                child: Transform.translate(
-                  offset: Offset(0, _tabIndex == 0 ? -4 : 0),
-                  child: AnimatedScale(
-                    scale: _tabIndex == 0 ? 1.2 : 1.0,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutBack,
-                    child: Icon(
-                      Icons.home,
-                      size: 26,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-              ),
-              label: 'Domů',
-            ),
-            BottomNavigationBarItem(
-              icon: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutBack,
-                padding: const EdgeInsets.all(6),
-                child: Transform.translate(
-                  offset: Offset(0, _tabIndex == 1 ? -4 : 0),
-                  child: AnimatedScale(
-                    scale: _tabIndex == 1 ? 1.2 : 1.0,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutBack,
-                    child: Icon(
-                      Icons.inventory_2_outlined,
-                      size: 26,
-                      color: _tabIndex == 1
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                    ),
-                  ),
-                ),
-              ),
-              activeIcon: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutBack,
-                padding: const EdgeInsets.all(6),
-                child: Transform.translate(
-                  offset: Offset(0, _tabIndex == 1 ? -4 : 0),
-                  child: AnimatedScale(
-                    scale: _tabIndex == 1 ? 1.2 : 1.0,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutBack,
-                    child: Icon(
-                      Icons.inventory_2,
-                      size: 26,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                ),
-              ),
-              label: 'Sklad',
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
