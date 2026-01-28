@@ -1,0 +1,190 @@
+{
+    "home": {
+        "title": "Start",
+        "stats": {
+            "total_products": "Produkte insgesamt",
+            "expiring_soon": "Läuft bald ab",
+            "expired": "Abgelaufen",
+            "consumed": "Verbraucht"
+        },
+        "warning": {
+            "title": "Achtung: Ablaufdaten!",
+            "expiring": "{count} Produkte laufen bald ab",
+            "view": "Anzeigen"
+        },
+        "quick_actions": {
+            "title": "Schnellaktionen",
+            "add_manual": "Manuell hinzufügen",
+            "scan_qr": "QR scannen",
+            "quick_pick": "Schnellauswahl"
+        },
+        "quick_access": {
+            "title": "Schnellzugriff",
+            "shopping_list": "Einkaufsliste",
+            "stats": "Statistiken",
+            "recipes": "Rezepte",
+            "settings": "Einstellungen"
+        },
+        "recent_activity": {
+            "title": "Letzte Aktivitäten",
+            "empty": "Noch keine Aktivitäten"
+        },
+        "recommendations": {
+            "title": "Empfehlungen",
+            "empty": "Füge mehr Produkte hinzu, um personalisierte Empfehlungen zu erhalten"
+        }
+    },
+    "inventory": {
+        "status": {
+            "expired": "Abgelaufen",
+            "today": "Heute",
+            "soon": "Bald",
+            "fresh": "Frisch"
+        },
+        "title": "Vorrat",
+        "search_hint": "Produkt suchen…",
+        "tooltip_filter": "Filtern",
+        "tooltip_grid": "Als Raster anzeigen",
+        "tooltip_list": "Als Liste anzeigen",
+        "active_filters_none": "Keine aktiven Filter",
+        "active_filters": "Filter: {filters}",
+        "clear_filters": "Filter zurücksetzen",
+        "snackbar_added": "{name} wurde zum Vorrat hinzugefügt",
+        "expiration": {
+            "expired": "{count} Produkte sind abgelaufen",
+            "expiring_soon": "{count} Produkte laufen bald ab"
+        },
+        "empty": {
+            "title": "Keine Produkte",
+            "subtitle_filters": "Versuche, die Filter zu ändern",
+            "subtitle_no_products": "Füge das erste Produkt über die + Taste hinzu"
+        },
+        "actions": {
+            "add_manual": "Manuell hinzufügen",
+            "scan_qr": "Scannen"
+        }
+    },
+    "nav": {
+        "home": "Start",
+        "inventory": "Vorrat"
+    },
+    "menu": {
+        "title": "Menü",
+        "settings": "Einstellungen",
+        "about": "Über die App",
+        "nutriscore_test": "Nutri-Score-Test"
+    },
+    "settings": {
+        "title": "Einstellungen",
+        "appearance": {
+            "title": "Darstellung",
+            "dark": {
+                "title": "Dunkelmodus",
+                "subtitle": "Zwischen hellem und dunklem Modus wechseln"
+            },
+            "theme": {
+                "title": "Farbthema",
+                "subtitle": "Primärfarbe und Stil der App ändern",
+                "primary": {
+                    "title": "Primärfarbe",
+                    "subtitle": "Wähle eine Farbe, aus der das gesamte Theme generiert wird",
+                    "dialog_title": "Primärfarbe",
+                    "options": {
+                        "green": "Grün",
+                        "blue": "Blau",
+                        "purple": "Lila",
+                        "orange": "Orange"
+                    }
+                }
+            },
+            "language": {
+                "title": "App-Sprache",
+                "dialog_title": "Sprache",
+                "cs": "Tschechisch",
+                "en": "Englisch",
+                "de": "Deutsch"
+            }
+        },
+        "alerts": {
+            "title": "Benachrichtigungen",
+            "notifications": {
+                "title": "Mitteilungen",
+                "subtitle": "Ablauf-Benachrichtigungen aktivieren oder deaktivieren"
+            },
+            "expiration": {
+                "title": "Vor Ablauf erinnern",
+                "dialog_title": "Vor Ablauf erinnern",
+                "before": {
+                    "one": "{count} Tag vor Ablauf",
+                    "other": "{count} Tage vor Ablauf"
+                }
+            }
+        },
+        "behavior": {
+            "title": "App-Verhalten",
+            "haptics": {
+                "title": "Vibration",
+                "subtitle": "Bei Aktionen vibrieren"
+            },
+            "sounds": {
+                "title": "Töne",
+                "subtitle": "Töne bei Aktionen abspielen"
+            }
+        },
+        "about": {
+            "title": "Über die App",
+            "info": {
+                "title": "Informationen",
+                "subtitle": "Grundlegende Infos zur App"
+            },
+            "help": {
+                "title": "Hilfe",
+                "subtitle": "Hilfe zur Nutzung anzeigen"
+            },
+            "coming_soon": "Kommt bald"
+        },
+        "common": {
+            "ok": "OK",
+            "off": "Aus"
+        }
+    },
+    "add_product": {
+        "add": "Produkt hinzufügen",
+        "edit": "Produkt bearbeiten",
+        "close": "Schließen",
+        "name": "Produktname",
+        "name_required": "Produktname ist erforderlich",
+        "brand": "Marke",
+        "quantity": "Menge",
+        "quantity_required": "Menge ist erforderlich",
+        "quantity_invalid": "Ungültige Menge",
+        "unit": "Einheiten",
+        "location": "Ort",
+        "product_type": "Produkttyp",
+        "expiration_date": "Ablaufdatum",
+        "save_changes": "Speichern",
+        "photo": "Produktfoto",
+        "remove": "Foto entfernen",
+        "gallery": "Galerie",
+        "photo_remove": "Foto entfernen",
+        "pick_date": "Datum auswählen",
+        "food": "Lebensmittel",
+        "beverage": "Getränk",
+        "other": "Sonstiges",
+        "pieces": "Stk.",
+        "fridge": "Kühlschrank",
+        "freezer": "Gefrierschrank",
+        "pantry": "Speisekammer"
+    },
+    "product_detail": {
+        "title": "Produktdetails",
+        "category": "Kategorie: {value}",
+        "type": "Typ: {value}",
+        "calories": "Kalorien: {value} kcal / 100g",
+        "ingredients_title": "Zutaten:",
+        "add_to_inventory": "Zum Vorrat hinzufügen",
+        "close": "Schließen",
+        "not_provided": "Nicht angegeben",
+        "na": "k. A."
+    }
+}

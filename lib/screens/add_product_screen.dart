@@ -5,6 +5,7 @@ import '../models/product.dart';
 import '../services/database_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class AddProductScreen extends StatefulWidget {
   final Product? existingProduct;
@@ -21,16 +22,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _brandController = TextEditingController();
   final _quantityController = TextEditingController();
 
-  String _unit = 'ks';
-  String _category = 'Lednice';
-  String _type = 'Jídlo';
+  String _unit = 'add_product.pieces'.tr();
+  String _category = 'add_product.fridge'.tr();
+  String _type = 'add_product.food'.tr();
   DateTime? _expirationDate;
   File? _selectedImage;
   String? _savedImagePath;
 
-  final List<String> _units = ['ks', 'g', 'kg', 'ml', 'l'];
-  final List<String> _categories = ['Lednice', 'Mrazák', 'Spíž'];
-  final List<String> _types = ['Jídlo', 'Pití', 'Ostatní'];
+  final List<String> _units = ['add_product.pieces'.tr(), 'g', 'kg', 'ml', 'l'];
+  final List<String> _categories = ['add_product.fridge'.tr(), 'add_product.freezer'.tr(), 'add_product.pantry'.tr()];
+  final List<String> _types = ['add_product.food'.tr(), 'add_product.beverage'.tr(), 'add_product.other'.tr()];
 
   @override
   void initState() {
@@ -189,16 +190,37 @@ class _AddProductScreenState extends State<AddProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
         title: Text(
-          widget.existingProduct == null ? 'Přidat produkt' : 'Upravit produkt',
+          widget.existingProduct == null
+              ? 'add_product.add'.tr()
+              : 'add_product.edit'.tr(),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
         ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
         actions: [
           IconButton(
+            tooltip: 'add_product.close'.tr(),
             icon: const Icon(Icons.close),
             onPressed: () => Navigator.pop(context),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context)
+                .colorScheme
+                .outlineVariant
+                .withOpacity(0.6),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -211,20 +233,24 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Název *',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'add_product.name'.tr() + ' *',
+                  border: const OutlineInputBorder(),
+                  filled: false,
+                  fillColor: Colors.transparent,
                 ),
                 validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Zadej název' : null,
+                    v == null || v.trim().isEmpty ? 'add_product.name_required'.tr() : null,
               ),
               const SizedBox(height: 16),
 
               TextFormField(
                 controller: _brandController,
-                decoration: const InputDecoration(
-                  labelText: 'Značka',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'add_product.brand'.tr(),
+                  border: const OutlineInputBorder(),
+                  filled: false,
+                  fillColor: Colors.transparent,
                 ),
               ),
               const SizedBox(height: 16),
@@ -234,15 +260,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: _quantityController,
-                      decoration: const InputDecoration(
-                        labelText: 'Množství *',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'add_product.quantity'.tr() + ' *',
+                        border: const OutlineInputBorder(),
+                        filled: false,
+                        fillColor: Colors.transparent,
                       ),
                       keyboardType: TextInputType.number,
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Vyplň množství';
+                        if (v == null || v.isEmpty) return 'add_product.quantity_required'.tr();
                         final n = double.tryParse(v);
-                        if (n == null || n <= 0) return 'Neplatné číslo';
+                        if (n == null || n <= 0) return 'add_product.quantity_invalid'.tr();
                         return null;
                       },
                     ),
@@ -251,9 +279,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       value: _unit,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Jednotka',
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        labelText: 'add_product.unit'.tr(),
+                        filled: false,
+                        fillColor: Colors.transparent,
                       ),
                       items: _units
                           .map(
@@ -272,9 +302,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 items: _categories
                     .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                     .toList(),
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Umístění',
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: 'add_product.location'.tr(),
+                  filled: false,
+                  fillColor: Colors.transparent,
                 ),
                 onChanged: (v) => setState(() => _category = v!),
               ),
@@ -285,9 +317,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 items: _types
                     .map((t) => DropdownMenuItem(value: t, child: Text(t)))
                     .toList(),
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Typ produktu',
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: 'add_product.product_type'.tr(),
+                  filled: false,
+                  fillColor: Colors.transparent,
                 ),
                 onChanged: (v) => setState(() => _type = v!),
               ),
@@ -296,16 +330,18 @@ class _AddProductScreenState extends State<AddProductScreen> {
               InkWell(
                 onTap: _selectDate,
                 child: InputDecorator(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Datum spotřeby',
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: 'add_product.expiration_date'.tr(),
+                    filled: false,
+                    fillColor: Colors.transparent,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         _expirationDate == null
-                            ? 'Vybrat datum'
+                            ? 'add_product.pick_date'.tr()
                             : '${_expirationDate!.day}.${_expirationDate!.month}.${_expirationDate!.year}',
                       ),
                       const Icon(Icons.calendar_today),
@@ -325,7 +361,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   ),
                   onPressed: _submit,
                   child: Text(
-                    widget.existingProduct == null ? 'Přidat' : 'Uložit změny',
+                    widget.existingProduct == null ? 'add_product.add'.tr() : 'add_product.save_changes'.tr(),
                   ),
                 ),
               ),
@@ -340,9 +376,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Fotka produktu',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        Text(
+          'add_product.photo'.tr(),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
 
@@ -366,6 +402,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 child: CircleAvatar(
                   backgroundColor: Colors.black54,
                   child: IconButton(
+                    tooltip: 'add_product.photo_remove'.tr(),
                     icon: const Icon(Icons.close, color: Colors.white),
                     onPressed: _removeImage,
                   ),
@@ -380,7 +417,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _pickFromGallery,
                   icon: const Icon(Icons.photo_library),
-                  label: const Text("Galerie"),
+                  label: Text("add_product.gallery".tr()),
                 ),
               ),
               const SizedBox(width: 12),
@@ -388,7 +425,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _takePhoto,
                   icon: const Icon(Icons.camera_alt),
-                  label: const Text("Foto"),
+                  label: Text("add_product.photo".tr()),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     foregroundColor: Theme.of(context).colorScheme.onPrimary,

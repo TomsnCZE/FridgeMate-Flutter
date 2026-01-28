@@ -1,0 +1,190 @@
+{
+    "home": {
+        "title": "Home",
+        "stats": {
+            "total_products": "Total products",
+            "expiring_soon": "Expiring soon",
+            "expired": "Expired",
+            "consumed": "Consumed"
+        },
+        "warning": {
+            "title": "Watch expiration dates!",
+            "expiring": "{count} products are expiring soon",
+            "view": "View"
+        },
+        "quick_actions": {
+            "title": "Quick actions",
+            "add_manual": "Add manually",
+            "scan_qr": "Scan QR",
+            "quick_pick": "Quick pick"
+        },
+        "quick_access": {
+            "title": "Quick access",
+            "shopping_list": "Shopping list",
+            "stats": "Statistics",
+            "recipes": "Recipes",
+            "settings": "Settings"
+        },
+        "recent_activity": {
+            "title": "Recent activity",
+            "empty": "No activity yet"
+        },
+        "recommendations": {
+            "title": "Recommendations",
+            "empty": "Add more products to get personalized recommendations"
+        }
+    },
+    "inventory": {
+        "status": {
+            "expired": "Expired",
+            "today": "Today",
+            "soon": "Soon",
+            "fresh": "Fresh"
+        },
+        "title": "Inventory",
+        "search_hint": "Search product…",
+        "tooltip_filter": "Filter",
+        "tooltip_grid": "Show as grid",
+        "tooltip_list": "Show as list",
+        "active_filters_none": "No active filters",
+        "active_filters": "Filters: {filters}",
+        "clear_filters": "Clear filters",
+        "snackbar_added": "{name} was added to inventory",
+        "expiration": {
+            "expired": "{count} products are expired",
+            "expiring_soon": "{count} products are expiring soon"
+        },
+        "empty": {
+            "title": "No products",
+            "subtitle_filters": "Try changing filters",
+            "subtitle_no_products": "Add your first product using the + button"
+        },
+        "actions": {
+            "add_manual": "Add manually",
+            "scan_qr": "Scan"
+        }
+    },
+    "nav": {
+        "home": "Home",
+        "inventory": "Inventory"
+    },
+    "menu": {
+        "title": "Menu",
+        "settings": "Settings",
+        "about": "About",
+        "nutriscore_test": "Nutri-Score test"
+    },
+    "settings": {
+        "title": "Settings",
+        "appearance": {
+            "title": "Appearance",
+            "dark": {
+                "title": "Dark mode",
+                "subtitle": "Switch between light and dark mode"
+            },
+            "theme": {
+                "title": "Color theme",
+                "subtitle": "Change the app’s primary color and style",
+                "primary": {
+                    "title": "Primary color",
+                    "subtitle": "Pick a color used to generate the whole theme",
+                    "dialog_title": "Primary color",
+                    "options": {
+                        "green": "Green",
+                        "blue": "Blue",
+                        "purple": "Purple",
+                        "orange": "Orange"
+                    }
+                }
+            },
+            "language": {
+                "title": "App language",
+                "dialog_title": "Language",
+                "cs": "Czech",
+                "en": "English",
+                "de": "German"
+            }
+        },
+        "alerts": {
+            "title": "Alerts",
+            "notifications": {
+                "title": "Notifications",
+                "subtitle": "Enable or disable expiration notifications"
+            },
+            "expiration": {
+                "title": "Notify before expiration",
+                "dialog_title": "Notify before expiration",
+                "before": {
+                    "one": "{count} day before expiration",
+                    "other": "{count} days before expiration"
+                }
+            }
+        },
+        "behavior": {
+            "title": "App behavior",
+            "haptics": {
+                "title": "Haptics",
+                "subtitle": "Vibrate on actions"
+            },
+            "sounds": {
+                "title": "Sounds",
+                "subtitle": "Play sounds on actions"
+            }
+        },
+        "about": {
+            "title": "About",
+            "info": {
+                "title": "Info",
+                "subtitle": "Basic information about the app"
+            },
+            "help": {
+                "title": "Help",
+                "subtitle": "View help for using the app"
+            },
+            "coming_soon": "Coming soon"
+        },
+        "common": {
+            "ok": "OK",
+            "off": "Off"
+        }
+    },
+    "add_product": {
+        "add": "Add product",
+        "edit": "Edit product",
+        "close": "Close",
+        "name": "Product name",
+        "name_required": "Product name is required",
+        "brand": "Brand",
+        "quantity": "Quantity",
+        "quantity_required": "Quantity is required",
+        "quantity_invalid": "Invalid quantity",
+        "unit": "Units",
+        "location": "Location",
+        "product_type": "Product type",
+        "expiration_date": "Expiration date",
+        "save_changes": "Save",
+        "photo": "Photo",
+        "remove": "Remove photo",
+        "gallery": "Gallery",
+        "photo_remove": "Remove photo",
+        "pick_date": "Pick date",
+        "food": "Food",
+        "beverage": "Beverage",
+        "other": "Other",
+        "pieces": "pcs",
+        "fridge": "Fridge",
+        "freezer": "Freezer",
+        "pantry": "Pantry"
+    },
+    "product_detail": {
+        "title": "Product details",
+        "category": "Category: {value}",
+        "type": "Type: {value}",
+        "calories": "Calories: {value} kcal / 100g",
+        "ingredients_title": "Ingredients:",
+        "add_to_inventory": "Add to inventory",
+        "close": "Close",
+        "not_provided": "Not provided",
+        "na": "N/A"
+    }
+}

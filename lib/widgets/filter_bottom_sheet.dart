@@ -64,8 +64,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // HEADER
+        children: [       
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -189,12 +188,12 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
               onSelected: (selected) => onChanged(option),
               backgroundColor: theme.colorScheme.surfaceVariant,
               selectedColor: theme.colorScheme.primary.withOpacity(0.2),
-              checkmarkColor: theme.colorScheme.primary,
+              checkmarkColor: theme.brightness == Brightness.dark ? Colors.white : theme.colorScheme.primary,
               labelStyle: TextStyle(
                 color: isSelected
-                    ? (theme.brightness == Brightness.light
-                        ? theme.colorScheme.onSurface
-                        : theme.colorScheme.onSecondary)
+                    ? (theme.brightness == Brightness.dark
+                        ? Colors.white
+                        : theme.colorScheme.onSurface)
                     : theme.colorScheme.onSurface,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

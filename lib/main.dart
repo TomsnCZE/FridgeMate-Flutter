@@ -1,19 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 import 'screens/inventory_screen.dart';
 import 'screens/settings_screen.dart';
 import 'package:openfoodfacts/openfoodfacts.dart' as off;
 import 'screens/about_screen.dart';
-import 'screens/nutriscore_test.dart';
 import 'themes/app_theme.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'services/settings_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+
   off.OpenFoodAPIConfiguration.userAgent = off.UserAgent(name: 'Fridge Mate');
 
+  // Default language for OFF (you can later sync this with the selected locale if you want)
   off.OpenFoodAPIConfiguration.globalLanguages = [
     off.OpenFoodFactsLanguage.CZECH,
   ];
-  runApp(const FridgeMateApp());
+
+  final savedLocaleCode = await SettingsService.getLocaleCode();
+  final startLocale = savedLocaleCode == null ? null : Locale(savedLocaleCode);
+
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [Locale('cs'), Locale('en'), Locale('de')],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('cs'),
+      startLocale: startLocale,
+      child: const FridgeMateApp(),
+    ),
+  );
 }
 
 class FridgeMateApp extends StatefulWidget {
@@ -25,23 +42,25 @@ class FridgeMateApp extends StatefulWidget {
 
 class _FridgeMateAppState extends State<FridgeMateApp> {
   bool _isDarkMode = false;
-
+  String _seedKey = 'green';
   @override
   void initState() {
     super.initState();
     _loadThemeSetting();
   }
 
-  Future<void> _loadThemeSetting() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _isDarkMode = prefs.getBool('dark_mode') ?? false;
-    });
-  }
+Future<void> _loadThemeSetting() async {
+  final dark = await SettingsService.getDarkMode();
+  final seedKey = await SettingsService.getThemeSeedKey();
+
+  setState(() {
+    _isDarkMode = dark;
+    _seedKey = seedKey;
+  });
+}
 
   void _toggleDarkMode(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('dark_mode', value);
+    await SettingsService.setDarkMode(value);
     setState(() {
       _isDarkMode = value;
     });
@@ -49,17 +68,23 @@ class _FridgeMateAppState extends State<FridgeMateApp> {
 
   @override
   Widget build(BuildContext context) {
+    final seed = AppTheme.seedFromKey(_seedKey);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Fridge Mate',
-
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      theme: AppTheme.light(seedColor: seed),
+      darkTheme: AppTheme.dark(seedColor: seed),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
-
       home: HomeScreen(
         isDarkMode: _isDarkMode,
         onThemeChanged: _toggleDarkMode,
+        currentSeedKey: _seedKey,
+        onSeedChanged: (k) {
+          setState(() => _seedKey = k);
+        },
       ),
     );
   }
@@ -68,11 +93,15 @@ class _FridgeMateAppState extends State<FridgeMateApp> {
 class HomeScreen extends StatefulWidget {
   final bool isDarkMode;
   final Function(bool) onThemeChanged;
+  final String currentSeedKey;
+  final ValueChanged<String> onSeedChanged;
 
   const HomeScreen({
     super.key,
     required this.isDarkMode,
     required this.onThemeChanged,
+    required this.currentSeedKey,
+    required this.onSeedChanged,
   });
 
   @override
@@ -94,32 +123,33 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _tabIndex == 0 ? 'Domů' : 'Sklad',
+          //preklad
+          _tabIndex == 0 ? 'home.title'.tr() : 'inventory.title'.tr(),
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        centerTitle: false,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
         surfaceTintColor: Colors.transparent,
-        elevation: 2,
-        shadowColor: Colors.black.withOpacity(0.1),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu_rounded),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
+        elevation: 0,
+        scrolledUnderElevation: 2,
+        shadowColor: Colors.black.withOpacity(0.08),
+        shape: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).dividerColor.withOpacity(0.18),
+            width: 1,
           ),
         ),
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
-            tooltip: 'Menu',
+            tooltip: 'menu.title'.tr(),
             elevation: 10,
             offset: const Offset(0, 10),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
             ),
-            color: Theme.of(context).colorScheme.surface, // ladí s tématem
+            color: Theme.of(context).colorScheme.surface,
             constraints: const BoxConstraints(minWidth: 220),
             onSelected: (value) {
               switch (value) {
@@ -139,88 +169,31 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context) => [
               PopupMenuItem<String>(
                 value: 'settings',
-                height: 48, // výška položky
-                child: const ListTile(
+                height: 48,
+                child: ListTile(
                   dense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                  leading: Icon(Icons.settings),
-                  title: Text('Nastavení'),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                  leading: const Icon(Icons.settings),
+                  title: Text('menu.settings'.tr()),
                 ),
               ),
-              const PopupMenuDivider(height: 1, color: Color.fromRGBO(153, 153, 153, 0.102)),
+              const PopupMenuDivider(
+                height: 1,
+                color: Color.fromRGBO(153, 153, 153, 0.102),
+              ),
               PopupMenuItem<String>(
                 value: 'about',
                 height: 48,
-                child: const ListTile(
+                child: ListTile(
                   dense: true,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 8),
-                  leading: Icon(Icons.info_outline),
-                  title: Text('O aplikaci'),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                  leading: const Icon(Icons.info_outline),
+                  title: Text('menu.about'.tr()),
                 ),
               ),
             ],
           ),
         ],
-      ),
-      drawerEnableOpenDragGesture: true,
-      drawer: Drawer(
-        elevation: 16,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topRight: Radius.circular(24),
-            bottomRight: Radius.circular(24),
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              child: Align(
-                alignment: Alignment.bottomLeft,
-                child: Text(
-                  'Menu',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home),
-              title: const Text('Domů'),
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _tabIndex = 0);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.inventory),
-              title: const Text('Sklad'),
-              onTap: () {
-                Navigator.pop(context);
-                setState(() => _tabIndex = 1);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bakery_dining),
-              title: const Text('Test Nutriscore'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NutriscoreTestScreen(),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
       ),
 
       body: AnimatedSwitcher(
@@ -228,21 +201,37 @@ class _HomeScreenState extends State<HomeScreen> {
         child: pages[_tabIndex],
       ),
 
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _tabIndex,
-        onDestinationSelected: (index) => setState(() => _tabIndex = index),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Domů',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(
+            top: BorderSide(
+              color: Theme.of(context).dividerColor.withOpacity(0.2),
+              width: 1,
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.inventory_2_outlined),
-            selectedIcon: Icon(Icons.inventory_2),
-            label: 'Sklad',
-          ),
-        ],
+        ),
+        child: NavigationBar(
+          height: 64,
+          selectedIndex: _tabIndex,
+          onDestinationSelected: (index) => setState(() => _tabIndex = index),
+          indicatorColor: Theme.of(
+            context,
+          ).colorScheme.primary.withOpacity(0.12),
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: [
+            NavigationDestination(
+              icon: const Icon(Icons.home_outlined, size: 22),
+              selectedIcon: const Icon(Icons.home, size: 22),
+              label: 'nav.home'.tr(),
+            ),
+            NavigationDestination(
+              icon: const Icon(Icons.inventory_2_outlined, size: 22),
+              selectedIcon: const Icon(Icons.inventory_2, size: 22),
+              label: 'nav.inventory'.tr(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -264,20 +253,25 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisSpacing: 12,
             children: [
               _buildStatCard(
-                "Celkem produktů",
+                'home.stats.total_products'.tr(),
                 _totalProducts,
                 Icons.inventory_2,
                 isDarkMode,
               ),
               _buildStatCard(
-                "Brzy expiruje",
+                'home.stats.expiring_soon'.tr(),
                 _expiringSoonCount,
                 Icons.warning,
                 isDarkMode,
               ),
-              _buildStatCard("Prošlé", _expiredCount, Icons.error, isDarkMode),
               _buildStatCard(
-                "Spotřebováno",
+                'home.stats.expired'.tr(),
+                _expiredCount,
+                Icons.error,
+                isDarkMode,
+              ),
+              _buildStatCard(
+                'home.stats.consumed'.tr(),
                 _weeklyConsumed,
                 Icons.analytics,
                 isDarkMode,
@@ -371,7 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Pozor na expirace!',
+                    'home.warning.title'.tr(),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.orange[800],
@@ -379,7 +373,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$_expiringSoonCount produktů brzy expiruje',
+                    'home.warning.expiring'.tr(
+                      namedArgs: {'count': _expiringSoonCount.toString()},
+                    ),
                     style: TextStyle(color: Colors.orange[700]),
                   ),
                 ],
@@ -389,7 +385,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 setState(() => _tabIndex = 1);
               },
-              child: const Text('Zobrazit'),
+              child: Text('home.warning.view'.tr()),
             ),
           ],
         ),
@@ -402,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Rychlé akce',
+          'home.quick_actions.title'.tr(),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -413,14 +409,19 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildActionButton('Přidat ručně', Icons.add, () {
-                // Otevře přidání produktu
-              }, isDarkMode),
+              child: _buildActionButton(
+                'home.quick_actions.add_manual'.tr(),
+                Icons.add,
+                () {
+                  // Otevře přidání produktu
+                },
+                isDarkMode,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildActionButton(
-                'Skenovat QR',
+                'home.quick_actions.scan_qr'.tr(),
                 Icons.qr_code_scanner,
                 () {
                   // Otevře QR scanner
@@ -430,9 +431,14 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildActionButton('Rychlý výběr', Icons.category, () {
-                // Otevře rychlý výběr
-              }, isDarkMode),
+              child: _buildActionButton(
+                'home.quick_actions.quick_pick'.tr(),
+                Icons.category,
+                () {
+                  // Otevře rychlý výběr
+                },
+                isDarkMode,
+              ),
             ),
           ],
         ),
@@ -482,7 +488,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Rychlý přístup',
+          'home.quick_access.title'.tr(),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -498,13 +504,25 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisSpacing: 12,
           children: [
             _buildQuickAccessCard(
-              'Nákupní seznam',
+              'home.quick_access.shopping_list'.tr(),
               Icons.shopping_cart,
               isDarkMode,
             ),
-            _buildQuickAccessCard('Statistiky', Icons.bar_chart, isDarkMode),
-            _buildQuickAccessCard('Recepty', Icons.restaurant_menu, isDarkMode),
-            _buildQuickAccessCard('Nastavení', Icons.settings, isDarkMode),
+            _buildQuickAccessCard(
+              'home.quick_access.stats'.tr(),
+              Icons.bar_chart,
+              isDarkMode,
+            ),
+            _buildQuickAccessCard(
+              'home.quick_access.recipes'.tr(),
+              Icons.restaurant_menu,
+              isDarkMode,
+            ),
+            _buildQuickAccessCard(
+              'home.quick_access.settings'.tr(),
+              Icons.settings,
+              isDarkMode,
+            ),
           ],
         ),
       ],
@@ -552,7 +570,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Nedávná aktivita',
+          'home.recent_activity.title'.tr(),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -563,14 +581,14 @@ class _HomeScreenState extends State<HomeScreen> {
         Card(
           elevation: 2,
           color: Theme.of(context).colorScheme.surface,
-          child: const Padding(
-            padding: EdgeInsets.all(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 // Zatím placeholder - později reálná data
                 Text(
-                  'Zatím žádná aktivita',
-                  style: TextStyle(color: Colors.grey),
+                  'home.recent_activity.empty'.tr(),
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ],
             ),
@@ -585,7 +603,7 @@ class _HomeScreenState extends State<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Doporučení',
+          'home.recommendations.title'.tr(),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -596,14 +614,14 @@ class _HomeScreenState extends State<HomeScreen> {
         Card(
           elevation: 2,
           color: Theme.of(context).colorScheme.surface,
-          child: const Padding(
-            padding: EdgeInsets.all(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 // Zatím placeholder - později chytré tipy
                 Text(
-                  'Přidej více produktů pro personalizovaná doporučení',
-                  style: TextStyle(color: Colors.grey),
+                  'home.recommendations.empty'.tr(),
+                  style: const TextStyle(color: Colors.grey),
                 ),
               ],
             ),
@@ -620,6 +638,8 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context) => SettingsScreen(
           onThemeChanged: widget.onThemeChanged,
           currentDarkMode: widget.isDarkMode,
+          currentSeedKey: widget.currentSeedKey,
+          onSeedChanged: widget.onSeedChanged,
         ),
       ),
     );

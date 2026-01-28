@@ -1,3 +1,5 @@
+import 'package:easy_localization/easy_localization.dart';
+
 class Product {
   final int? id;
   final String name;
@@ -38,14 +40,14 @@ class Product {
       id: map['id'] as int?,
       name: map['name'],
       brand: map['brand'],
-      category: map['category'] ?? 'Lednice',
+      category: map['category'] ?? 'add_product.food'.tr(),
       quantity: (map['quantity'] as num?)?.toDouble() ?? 1.0,
       expirationDate: map['expirationDate'] != null
           ? DateTime.tryParse(map['expirationDate'])
           : null,
       extra: {
-        'unit': map['unit'] ?? 'ks',
-        'type': map['type'] ?? 'Jídlo',
+        'unit': map['unit'] ?? 'add_product.pieces'.tr(),
+        'type': map['type'] ?? 'add_product.food'.tr(),
         'localImagePath': map['localImagePath'],
       },
     );

@@ -175,7 +175,17 @@ class _QRScannerScreenState extends State<QRScannerScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Skenovat čárový kód'),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        title: Text(
+          'Skenovat čárový kód',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+        ),
         actions: [
           IconButton(
             tooltip: 'Blesk',
@@ -186,6 +196,17 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             icon: Icon(_isTorchOn ? Icons.flash_on : Icons.flash_off),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context)
+                .colorScheme
+                .outlineVariant
+                .withOpacity(0.6),
+          ),
+        ),
       ),
       body: Stack(
         fit: StackFit.expand,

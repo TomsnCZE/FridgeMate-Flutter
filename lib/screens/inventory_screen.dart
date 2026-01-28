@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import '../models/product.dart';
 import '../widgets/product_card.dart';
@@ -25,12 +26,20 @@ class _InventoryScreenState extends State<InventoryScreen> {
   String _filterType = 'Vše';
   String _filterExpiration = 'Vše';
   String _viewMode = 'list';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _searchController.text = _search;
     _loadViewMode();
     _loadProducts();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadViewMode() async {
@@ -61,7 +70,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${result.name} byl přidán do skladu',
+            'inventory.snackbar_added'.tr(namedArgs: {'name': result.name}),
             style: TextStyle(color: isDark ? Colors.white : Colors.black),
           ),
           backgroundColor: isDark ? Colors.grey[800] : Colors.white,
@@ -85,7 +94,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${result.name} byl přidán do skladu',
+            'inventory.snackbar_added'.tr(namedArgs: {'name': result.name}),
             style: TextStyle(color: isDark ? Colors.white : Colors.black),
           ),
           backgroundColor: isDark ? Colors.grey[800] : Colors.white,
@@ -181,6 +190,57 @@ class _InventoryScreenState extends State<InventoryScreen> {
     }
   }
 
+  Widget _buildTopBar(ThemeData theme) {
+    final cs = theme.colorScheme;
+
+    return Material(
+      color: cs.surface,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: SearchBar(
+            controller: _searchController,
+            hintText: 'inventory.search_hint'.tr(),
+            leading: Icon(Icons.search, color: cs.onSurfaceVariant),
+            trailing: [
+              IconButton(
+                tooltip: 'inventory.tooltip_filter'.tr(),
+                onPressed: _showFilterSheet,
+                icon: Icon(Icons.tune, color: cs.onSurfaceVariant),
+              ),
+              IconButton(
+                tooltip: _viewMode == 'list'
+                    ? 'inventory.tooltip_grid'.tr()
+                    : 'inventory.tooltip_list'.tr(),
+                onPressed: _toggleViewMode,
+                icon: Icon(
+                  _viewMode == 'list' ? Icons.grid_view : Icons.view_list,
+                  color: cs.primary,
+                ),
+              ),
+            ],
+            onChanged: (val) {
+              setState(() => _search = val);
+            },
+            padding: const MaterialStatePropertyAll(
+              EdgeInsets.symmetric(horizontal: 14),
+            ),
+            backgroundColor: MaterialStatePropertyAll(
+              cs.surfaceContainerHighest,
+            ),
+            elevation: const MaterialStatePropertyAll(0),
+            shape: MaterialStatePropertyAll(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   String _getActiveFiltersText() {
     final filters = [];
     if (_filterCategory != 'Vše') filters.add(_filterCategory);
@@ -188,8 +248,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     if (_filterExpiration != 'Vše') filters.add(_filterExpiration);
 
     return filters.isEmpty
-        ? 'Žádné aktivní filtry'
-        : 'Filtry: ${filters.join(', ')}';
+        ? 'inventory.active_filters_none'.tr()
+        : 'inventory.active_filters'.tr(namedArgs: {
+            'filters': filters.join(', '),
+          });
   }
 
   @override
@@ -223,56 +285,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return Scaffold(
       body: Column(
         children: [
-          // HLEDÁNÍ
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search, color: theme.hintColor),
-                hintText: 'Hledat produkt...',
-                hintStyle: TextStyle(color: theme.hintColor),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[100],
-              ),
-              onChanged: (val) => setState(() => _search = val),
-            ),
-          ),
-
-          // FILTRY A ZOBRAZENÍ
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.filter_list),
-                    label: const Text('Filtrovat produkty'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      foregroundColor: Theme.of(context).colorScheme.onSurface,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    onPressed: _showFilterSheet,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: Icon(
-                    _viewMode == 'list' ? Icons.grid_view : Icons.view_list,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  onPressed: _toggleViewMode,
-                  tooltip: _viewMode == 'list'
-                      ? 'Zobrazit jako mřížku'
-                      : 'Zobrazit jako seznam',
-                ),
-              ],
-            ),
-          ),
+          _buildTopBar(theme),
 
           // INDIKÁTOR AKTIVNÍCH FILTRŮ
           if (hasActiveFilters)
@@ -280,17 +293,20 @@ class _InventoryScreenState extends State<InventoryScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: isDarkMode ? Colors.grey[800] : Colors.grey[100],
-                borderRadius: BorderRadius.circular(8),
+                color: theme.colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: theme.colorScheme.outlineVariant.withOpacity(0.6),
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.filter_alt, size: 16, color: theme.hintColor),
+                  Icon(Icons.filter_alt, size: 16, color: theme.colorScheme.onSurfaceVariant),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _getActiveFiltersText(),
-                      style: TextStyle(color: theme.hintColor, fontSize: 14),
+                      style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 14),
                     ),
                   ),
                   InkWell(
@@ -301,7 +317,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         _filterExpiration = 'Vše';
                       });
                     },
-                    child: Icon(Icons.close, size: 16, color: theme.hintColor),
+                    child: Tooltip(
+                      message: 'inventory.clear_filters'.tr(),
+                      child: Icon(
+                        Icons.close,
+                        size: 16,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -331,8 +354,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   Expanded(
                     child: Text(
                       expiredCount > 0
-                          ? '$expiredCount produktů prošlo expirací'
-                          : '$expiringSoonCount produktů brzy expiruje',
+                          ? 'inventory.expiration.expired'.tr(namedArgs: {
+                              'count': expiredCount.toString(),
+                            })
+                          : 'inventory.expiration.expiring_soon'.tr(namedArgs: {
+                              'count': expiringSoonCount.toString(),
+                            }),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w500,
@@ -355,7 +382,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Žádné produkty',
+                          'inventory.empty.title'.tr(),
                           style: TextStyle(
                             color: theme.hintColor,
                             fontSize: 16,
@@ -363,8 +390,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                         ),
                         Text(
                           hasActiveFilters
-                              ? 'Zkus změnit filtry'
-                              : 'Přidej první produkt pomocí tlačítka +',
+                              ? 'inventory.empty.subtitle_filters'.tr()
+                              : 'inventory.empty.subtitle_no_products'.tr(),
                           style: TextStyle(
                             color: theme.hintColor,
                             fontSize: 14,
@@ -413,12 +440,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
         children: [
           SpeedDialChild(
             child: const Icon(Icons.add),
-            label: 'Přidat ručně',
+            label: 'inventory.actions.add_manual'.tr(),
             onTap: _handleAddPressed,
           ),
           SpeedDialChild(
             child: const Icon(Icons.qr_code_scanner),
-            label: 'Skenovat',
+            label: 'inventory.actions.scan_qr'.tr(),
             onTap: _handleScanPressed,
           ),
         ],

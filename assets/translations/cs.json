@@ -1,0 +1,188 @@
+{
+    "home": {
+        "title": "Domů",
+        "stats": {
+            "total_products": "Celkem produktů",
+            "expiring_soon": "Brzy expiruje",
+            "expired": "Prošlé",
+            "consumed": "Spotřebováno"
+        },
+        "warning": {
+            "title": "Pozor na expirace!",
+            "expiring": "{count} produktů brzy expiruje",
+            "view": "Zobrazit"
+        },
+        "quick_actions": {
+            "title": "Rychlé akce",
+            "add_manual": "Přidat ručně",
+            "scan_qr": "Skenovat QR",
+            "quick_pick": "Rychlý výběr"
+        },
+        "quick_access": {
+            "title": "Rychlý přístup",
+            "shopping_list": "Nákupní seznam",
+            "stats": "Statistiky",
+            "recipes": "Recepty",
+            "settings": "Nastavení"
+        },
+        "recent_activity": {
+            "title": "Nedávná aktivita",
+            "empty": "Zatím žádná aktivita"
+        },
+        "recommendations": {
+            "title": "Doporučení",
+            "empty": "Přidej více produktů pro personalizovaná doporučení"
+        }
+    },
+    "inventory": {
+        "status": {
+            "expired": "Expirováno",
+            "today": "Dnes",
+            "soon": "Brzy",
+            "fresh": "Čerstvé"
+        },
+        "title": "Sklad",
+        "search_hint": "Hledat produkt…",
+        "tooltip_filter": "Filtrovat",
+        "tooltip_grid": "Zobrazit jako mřížku",
+        "tooltip_list": "Zobrazit jako seznam",
+        "active_filters_none": "Žádné aktivní filtry",
+        "active_filters": "Filtry: {filters}",
+        "clear_filters": "Zrušit filtry",
+        "snackbar_added": "{name} byl přidán do skladu",
+        "expiration": {
+            "expired": "{count} produktů prošlo expirací",
+            "expiring_soon": "{count} produktů brzy expiruje"
+        },
+        "empty": {
+            "title": "Žádné produkty",
+            "subtitle_filters": "Zkus změnit filtry",
+            "subtitle_no_products": "Přidej první produkt pomocí tlačítka +"
+        },
+        "actions": {
+            "add_manual": "Přidat ručně",
+            "scan_qr": "Skenovat"
+        }
+    },
+    "nav": {
+        "home": "Domů",
+        "inventory": "Sklad"
+    },
+    "menu": {
+        "title": "Menu",
+        "settings": "Nastavení",
+        "about": "O aplikaci",
+        "nutriscore_test": "Test Nutri-Score"
+    },
+    "settings": {
+        "title": "Nastavení",
+        "appearance": {
+            "title": "Vzhled",
+            "dark": {
+                "title": "Tmavý režim",
+                "subtitle": "Přepnout mezi světlým a tmavým režimem aplikace"
+            },
+            "theme": {
+                "primary": {
+                    "title": "Barevné téma",
+                    "dialog_title": "Barevné téma",
+                    "options": {
+                        "green": "Zelená",
+                        "blue": "Modrá",
+                        "purple": "Fialová",
+                        "orange": "Oranžová"
+                    }
+                }
+            },
+            "language": {
+                "title": "Jazyk aplikace",
+                "dialog_title": "Jazyk",
+                "cs": "Čeština",
+                "en": "Angličtina",
+                "de": "Němčina"
+            }
+        },
+        "alerts": {
+            "title": "Upozornění",
+            "notifications": {
+                "title": "Notifikace",
+                "subtitle": "Povolit nebo zakázat upozornění na expiraci"
+            },
+            "expiration": {
+                "title": "Upozornit před expirací",
+                "dialog_title": "Upozornit před expirací",
+                "before": {
+                    "one": "Za {count} den před expirací",
+                    "few": "Za {count} dny před expirací",
+                    "other": "Za {count} dní před expirací"
+                }
+            }
+        },
+        "behavior": {
+            "title": "Chování aplikace",
+            "haptics": {
+                "title": "Vibrace",
+                "subtitle": "Vibrace při akcích v aplikaci"
+            },
+            "sounds": {
+                "title": "Zvuky",
+                "subtitle": "Přehrávat zvuky při akcích v aplikaci"
+            }
+        },
+        "about": {
+            "title": "O aplikaci",
+            "info": {
+                "title": "Informace",
+                "subtitle": "Základní informace o aplikaci"
+            },
+            "help": {
+                "title": "Nápověda",
+                "subtitle": "Zobrazit nápovědu k používání aplikace"
+            },
+            "coming_soon": "Brzy dostupné"
+        },
+        "common": {
+            "ok": "OK",
+            "off": "Vypnuto"
+        }
+    },
+    "add_product": {
+        "add": "Přidat produkt",
+        "edit": "Upravit produkt",
+        "close": "Zavřít",
+        "name": "Název produktu",
+        "name_required": "Název je povinný",
+        "brand": "Značka",
+        "quantity": "Množství",
+        "quantity_required": "Množství je povinné",
+        "quantity_invalid": "Neplatné množství",
+        "unit": "Jednotky",
+        "location": "Umístění",
+        "product_type": "Typ produktu",
+        "expiration_date": "Datum expirace",
+        "save_changes": "Uložit",
+        "photo": "Fotografie",
+        "remove": "Odstranit fotografii",
+        "gallery": "Galerie",
+        "photo_remove": "Odstranit fotografii",
+        "pick_date": "Vybrat datum",
+        "food": "Jídlo",
+        "beverage": "Nápoj",
+        "other": "Ostatní",
+        "pieces": "ks",
+        "fridge": "Lednice",
+        "freezer": "Mrazák",
+        "pantry": "Spíž"
+    },
+    "product_detail": {
+        "title": "Detail produktu",
+        "category": "Kategorie: {value}",
+        "type": "Typ: {value}",
+        "calories": "Kalorie: {value} kcal / 100g",
+        "ingredients_title": "Složení:",
+        "add_to_inventory": "Přidat do skladu",
+        "close": "Zavřít",
+        "not_provided": "Neuvedeno",
+        "na": "N/A"
+    }
+}

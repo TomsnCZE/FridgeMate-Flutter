@@ -26,22 +26,21 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	
-	<!-- ✅ OPRAVENÉ PERMISSIONS -->
+
 	<key>NSCameraUsageDescription</key>
 	<string>Tato aplikace potřebuje přístup ke kameře pro skenování QR kódů a focení produktů.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Aplikace potřebuje přístup k fotogalerii pro výběr fotek produktů</string>
+	<string>Aplikace potřebuje přístup k fotogalerii pro výběr fotek produktů.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Aplikace potřebuje přístup k mikrofonu pro nahrávání videa při focení</string>
-	<!-- ✅ KONEC PERMISSIONS -->
-	
+	<string>Aplikace potřebuje přístup k mikrofonu pro nahrávání videa při focení.</string>
+
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -55,5 +54,12 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>cs</string>
+		<string>de</string>
+	</array>
+
 </dict>
 </plist>

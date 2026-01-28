@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/product.dart';
 import '../screens/add_product_screen.dart';
 
@@ -12,9 +13,23 @@ class ProductDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final ingredients = product.extra?['ingredients'] ?? 'Neuvedeno';
-    final calories = product.extra?['calories'] ?? 'N/A';
-    final type = product.extra?['type'] ?? 'Jídlo';
+    final ingredients = (product.extra?['ingredients'] as String?)?.trim().isNotEmpty == true
+        ? (product.extra?['ingredients'] as String).trim()
+        : 'product_detail.not_provided'.tr();
+
+    final calories = (product.extra?['calories'] as String?)?.trim().isNotEmpty == true
+        ? (product.extra?['calories'] as String).trim()
+        : 'product_detail.na'.tr();
+
+    final rawType = product.extra?['type'] ?? 'food';
+    final rawLocation = product.extra?['location'] ?? product.category;
+
+    final typeKey = _normalizeType(rawType);
+    final locationKey = _normalizeLocation(rawLocation);
+
+    final typeText = 'add_product.$typeKey'.tr();
+    final locationText = 'add_product.$locationKey'.tr();
+
     final localImage = product.extra?['localImagePath'];
 
     Widget imageWidget;
@@ -44,7 +59,7 @@ class ProductDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Detail produktu'),
+        title: Text('product_detail.title'.tr()),
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
       ),
@@ -78,7 +93,9 @@ class ProductDetailScreen extends StatelessWidget {
                 Icon(Icons.category, color: theme.colorScheme.primary),
                 const SizedBox(width: 6),
                 Text(
-                  'Kategorie: ${product.category}',
+                  'product_detail.category'.tr(namedArgs: {
+                    'value': locationText,
+                  }),
                   style: TextStyle(
                     fontSize: 16,
                     color: theme.colorScheme.onSurface,
@@ -94,7 +111,9 @@ class ProductDetailScreen extends StatelessWidget {
                 Icon(Icons.fastfood, color: theme.colorScheme.primary),
                 const SizedBox(width: 6),
                 Text(
-                  'Typ: $type',
+                  'product_detail.type'.tr(namedArgs: {
+                    'value': typeText,
+                  }),
                   style: TextStyle(
                     fontSize: 16,
                     color: theme.colorScheme.onSurface,
@@ -110,7 +129,9 @@ class ProductDetailScreen extends StatelessWidget {
                 Icon(Icons.local_fire_department, color: theme.colorScheme.primary),
                 const SizedBox(width: 6),
                 Text(
-                  'Kalorie: $calories kcal / 100g',
+                  'product_detail.calories'.tr(namedArgs: {
+                    'value': calories,
+                  }),
                   style: TextStyle(
                     fontSize: 16,
                     color: theme.colorScheme.onSurface,
@@ -125,7 +146,7 @@ class ProductDetailScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             Text(
-              'Složení:',
+              'product_detail.ingredients_title'.tr(),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -148,7 +169,7 @@ class ProductDetailScreen extends StatelessWidget {
               children: [
                 ElevatedButton.icon(
                   icon: const Icon(Icons.add),
-                  label: const Text('Přidat do skladu'),
+                  label: Text('product_detail.add_to_inventory'.tr()),
                   onPressed: () async {
                     final productToPrefill = Product(
                       id: null, // nový produkt
@@ -159,8 +180,8 @@ class ProductDetailScreen extends StatelessWidget {
                       expirationDate: product.expirationDate,
                       quantity: 1,
                       extra: {
-                        'unit': product.extra?['unit'] ?? 'ks',
-                        'type': product.extra?['type'] ?? 'Jídlo',
+                        'unit': product.extra?['unit'] ?? 'pieces',
+                        'type': typeKey,
                         'localImagePath': product.extra?['localImagePath'],
                         'ingredients': product.extra?['ingredients'],
                         'calories': product.extra?['calories'],
@@ -183,7 +204,7 @@ class ProductDetailScreen extends StatelessWidget {
                 ),
                 OutlinedButton.icon(
                   icon: const Icon(Icons.close),
-                  label: const Text('Zavřít'),
+                  label: Text('product_detail.close'.tr()),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -196,18 +217,66 @@ class ProductDetailScreen extends StatelessWidget {
     );
   }
 
+  String _normalizeType(dynamic v) {
+    final s = (v ?? '').toString().trim();
+    if (s.isEmpty) return 'food';
+
+    final l = s.toLowerCase();
+
+    // already stored keys
+    if (l == 'food') return 'food';
+    if (l == 'beverage' || l == 'drink') return 'beverage';
+    if (l == 'other') return 'other';
+
+    // Czech values
+    if (l == 'jídlo' || l == 'jidlo') return 'food';
+    if (l == 'pití' || l == 'piti') return 'beverage';
+    if (l == 'ostatní' || l == 'ostatni') return 'other';
+
+    // German values
+    if (l == 'lebensmittel' || l == 'essen') return 'food';
+    if (l == 'getränk' || l == 'getraenk' || l == 'getraenke') return 'beverage';
+    if (l == 'sonstiges') return 'other';
+
+    return 'food';
+  }
+
+  String _normalizeLocation(dynamic v) {
+    final s = (v ?? '').toString().trim();
+    if (s.isEmpty) return 'fridge';
+
+    final l = s.toLowerCase();
+
+    // already stored keys
+    if (l == 'fridge') return 'fridge';
+    if (l == 'freezer') return 'freezer';
+    if (l == 'pantry') return 'pantry';
+
+    // Czech values
+    if (l == 'lednice') return 'fridge';
+    if (l == 'mrazák' || l == 'mrazak') return 'freezer';
+    if (l == 'spíž' || l == 'spiz') return 'pantry';
+
+    // German values
+    if (l == 'kühlschrank' || l == 'kuehlschrank') return 'fridge';
+    if (l == 'gefrierschrank') return 'freezer';
+    if (l == 'speisekammer') return 'pantry';
+
+    return 'fridge';
+  }
+
   String _mapApiCategory(String apiCategory) {
     final lower = apiCategory.toLowerCase();
     if (lower.contains('beverages') ||
         lower.contains('beverage') ||
         lower.contains('drink')) {
-      return 'Pití';
+      return 'beverage';
     }
     if (lower.contains('food') ||
         lower.contains('meal') ||
         lower.contains('groceries')) {
-      return 'Jídlo';
+      return 'food';
     }
-    return 'Ostatní';
+    return 'other';
   }
 }

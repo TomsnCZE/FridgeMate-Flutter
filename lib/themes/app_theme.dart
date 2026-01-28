@@ -2,19 +2,43 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // ✅ Brand / primary color (jedna hlavní barva pro celou appku)
-  // Uprav si ji kdykoliv – z ní se generuje celá paleta (Material 3).
-  static const Color brand = Color.fromARGB(255, 47, 240, 195);
+  // =========================
+  // 🎨 PRESET SEED COLORS
+  // =========================
+  // Tyhle klíče si můžeš ukládat do SharedPreferences (např. "green").
+  static const String seedGreen = 'green';
+  static const String seedPurple = 'purple';
+  static const String seedBlue = 'blue';
+  static const String seedOrange = 'orange';
 
-  static ThemeData light() {
-    // Vygeneruj M3 schéma ze seed barvy
+  // Default seed (když uživatel nic nezvolí)
+  static const String defaultSeedKey = seedGreen;
+
+  // Map klíč -> barva (seed)
+  static const Map<String, Color> presetSeeds = {
+    'green': Color.fromARGB(255, 175, 180, 43),
+    'blue': Color.fromARGB(255, 2, 136, 209),
+    'purple': Color.fromARGB(255, 126, 87, 194),
+    'orange': Color.fromARGB(255, 245, 124, 0),
+  };
+
+  /// Vezme uložený klíč a vrátí barvu. Když klíč neexistuje, vrátí default.
+  static Color seedFromKey(String? key) {
+    return presetSeeds[key] ?? presetSeeds[defaultSeedKey]!;
+  }
+
+  // =========================
+  // 🌞 LIGHT THEME
+  // =========================
+  static ThemeData light({Color? seedColor}) {
+    final seed = seedColor ?? presetSeeds[defaultSeedKey]!;
+
     var cs = ColorScheme.fromSeed(
-      seedColor: brand,
+      seedColor: seed,
       brightness: Brightness.light,
     );
 
-    // ✅ Chceš “jednu hlavní barvu”: sekundární/terciární držíme u stejného tónu,
-    // aby appka nepůsobila “fialově / náhodně”.
+    // držíme secondary/tertiary u primary, aby to bylo “jednobarevné”
     cs = cs.copyWith(
       secondary: cs.primary,
       onSecondary: cs.onPrimary,
@@ -30,9 +54,6 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: cs,
-
-      // ✅ Vypne “divné linky / tint” na površích (M3 surface tint)
-      // nejčastěji to dělá ty čáry/odlesky okolo buttonů a barů.
       splashFactory: InkSparkle.splashFactory,
 
       scaffoldBackgroundColor: cs.surface,
@@ -60,35 +81,40 @@ class AppTheme {
         foregroundColor: cs.onPrimary,
       ),
 
-      // Material 3 tlačítka (Google-like)
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: cs.primary,
           foregroundColor: cs.onPrimary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
       ),
+
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: cs.primary,
           side: BorderSide(color: cs.outline),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
       ),
+
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: cs.primary,
-        ),
+        style: TextButton.styleFrom(foregroundColor: cs.primary),
       ),
+
       elevatedButtonTheme: ElevatedButtonThemeData(
-        // Když někde zůstalo ElevatedButton, ať vypadá stejně “čistě”.
         style: ElevatedButton.styleFrom(
           backgroundColor: cs.primary,
           foregroundColor: cs.onPrimary,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
       ),
@@ -117,16 +143,22 @@ class AppTheme {
 
       chipTheme: ChipThemeData(
         backgroundColor: cs.surfaceContainerHighest,
+        // barva pozadí pro selected chip
         selectedColor: cs.primaryContainer,
         secondarySelectedColor: cs.primaryContainer,
+
+        // TEXT: unselected / selected
         labelStyle: TextStyle(color: cs.onSurface),
-        secondaryLabelStyle: TextStyle(color: cs.onPrimaryContainer),
-        checkmarkColor: cs.onPrimaryContainer,
+        // v dark theme chceme vždy bílý text, aby byl dobře čitelný
+        secondaryLabelStyle: const TextStyle(color: Colors.white),
+
+        checkmarkColor: Colors.white,
         side: BorderSide(color: cs.outlineVariant),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
 
       inputDecorationTheme: InputDecorationTheme(
+        // pokud chceš “bez šedého pozadí”, změň filled na false + border na outline
         filled: true,
         fillColor: cs.surfaceContainerHighest,
         border: OutlineInputBorder(
@@ -151,11 +183,13 @@ class AppTheme {
     );
   }
 
-  static ThemeData dark() {
-    var cs = ColorScheme.fromSeed(
-      seedColor: brand,
-      brightness: Brightness.dark,
-    );
+  // =========================
+  // 🌙 DARK THEME
+  // =========================
+  static ThemeData dark({Color? seedColor}) {
+    final seed = seedColor ?? presetSeeds[defaultSeedKey]!;
+
+    var cs = ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark);
 
     cs = cs.copyWith(
       secondary: cs.primary,
@@ -203,29 +237,36 @@ class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: cs.primary,
           foregroundColor: cs.onPrimary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
       ),
+
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: cs.primary,
           side: BorderSide(color: cs.outline),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
       ),
+
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: cs.primary,
-        ),
+        style: TextButton.styleFrom(foregroundColor: cs.primary),
       ),
+
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: cs.primary,
           foregroundColor: cs.onPrimary,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
       ),

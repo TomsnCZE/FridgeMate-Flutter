@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../widgets/action_sheet.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ProductCard extends StatelessWidget {
   final Product product;
@@ -22,23 +23,34 @@ class ProductCard extends StatelessWidget {
     final expDate = product.expirationDate;
     final expirationStatus = _getExpirationStatus(expDate);
 
-    final unit = product.extra?['unit'] ?? 'ks';
-    final type = product.extra?['type'] ?? 'Jídlo';
-    final location = product.extra?['location'] ?? product.category;
+    final rawUnit = product.extra?['unit'];
+    final rawType = product.extra?['type'];
+    final rawLocation = product.extra?['location'] ?? product.category;
     final localImagePath = product.extra?['localImagePath'];
+
+    final unitKeyOrRaw = _normalizeUnit(rawUnit);
+    final typeKey = _normalizeType(rawType);
+    final locationKey = _normalizeLocation(rawLocation);
+
+    final unitText = unitKeyOrRaw.startsWith('add_product.')
+        ? unitKeyOrRaw.tr()
+        : unitKeyOrRaw;
+    final typeText = 'add_product.$typeKey'.tr();
+    final locationText = 'add_product.$locationKey'.tr();
 
     Color typeColor;
     IconData typeIcon;
 
-    switch (type) {
-      case 'Pití':
+    switch (typeKey) {
+      case 'beverage':
         typeColor = Colors.blueAccent;
         typeIcon = Icons.local_drink_outlined;
         break;
-      case 'Ostatní':
+      case 'other':
         typeColor = Colors.grey;
         typeIcon = Icons.category_outlined;
         break;
+      case 'food':
       default:
         typeColor = Colors.orange;
         typeIcon = Icons.fastfood_outlined;
@@ -131,7 +143,7 @@ class ProductCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '$type • $location',
+                        '$typeText • $locationText',
                         style: TextStyle(
                           fontSize: 13,
                           color: colors.onSurface.withOpacity(0.6),
@@ -143,7 +155,7 @@ class ProductCard extends StatelessWidget {
                           Icon(Icons.scale, size: 14, color: colors.primary),
                           const SizedBox(width: 4),
                           Text(
-                            '${product.quantity} $unit',
+                            '${product.quantity} $unitText',
                             style: TextStyle(
                               fontSize: 13,
                               color: colors.onSurface,
@@ -263,13 +275,13 @@ class ProductCard extends StatelessWidget {
   String _getStatusText(String status) {
     switch (status) {
       case 'expired':
-        return 'EXPIROVÁNO';
+        return 'inventory.status.expired'.tr();
       case 'today':
-        return 'DNES';
+        return 'inventory.status.today'.tr();
       case 'soon':
-        return 'BRZY';
+        return 'inventory.status.soon'.tr();
       case 'fresh':
-        return 'ČERSTVÉ';
+        return 'inventory.status.fresh'.tr();
       default:
         return '—';
     }
@@ -285,6 +297,68 @@ class ProductCard extends StatelessWidget {
       default:
         return null;
     }
+  }
+
+  String _normalizeType(dynamic v) {
+    final s = (v ?? '').toString().trim();
+    if (s.isEmpty) return 'food';
+
+    final l = s.toLowerCase();
+
+    // already stored keys
+    if (l == 'food') return 'food';
+    if (l == 'beverage' || l == 'drink') return 'beverage';
+    if (l == 'other') return 'other';
+
+    // Czech values
+    if (l == 'jídlo' || l == 'jidlo') return 'food';
+    if (l == 'pití' || l == 'piti') return 'beverage';
+    if (l == 'ostatní' || l == 'ostatni') return 'other';
+
+    // German values
+    if (l == 'lebensmittel' || l == 'essen') return 'food';
+    if (l == 'getränk' || l == 'getraenk' || l == 'getraenke') return 'beverage';
+    if (l == 'sonstiges') return 'other';
+
+    return 'food';
+  }
+
+  String _normalizeLocation(dynamic v) {
+    final s = (v ?? '').toString().trim();
+    if (s.isEmpty) return 'fridge';
+
+    final l = s.toLowerCase();
+
+    // already stored keys
+    if (l == 'fridge') return 'fridge';
+    if (l == 'freezer') return 'freezer';
+    if (l == 'pantry') return 'pantry';
+
+    // Czech values
+    if (l == 'lednice') return 'fridge';
+    if (l == 'mrazák' || l == 'mrazak') return 'freezer';
+    if (l == 'spíž' || l == 'spiz') return 'pantry';
+
+    // German values
+    if (l == 'kühlschrank' || l == 'kuehlschrank') return 'fridge';
+    if (l == 'gefrierschrank') return 'freezer';
+    if (l == 'speisekammer') return 'pantry';
+
+    return 'fridge';
+  }
+
+  /// Returns either a localization key (like `add_product.pieces`) or a raw unit string (like `g`, `kg`, `ml`, `l`).
+  String _normalizeUnit(dynamic v) {
+    final s = (v ?? '').toString().trim();
+    if (s.isEmpty) return 'add_product.pieces';
+
+    final l = s.toLowerCase();
+    if (l == 'ks' || l == 'pcs' || l == 'stk' || l == 'stk.') {
+      return 'add_product.pieces';
+    }
+
+    // Keep common units as-is (not translated)
+    return s;
   }
 
   Widget _buildProductImage(
