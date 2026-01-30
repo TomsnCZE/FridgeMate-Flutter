@@ -1,16 +1,20 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:openfoodfacts/openfoodfacts.dart' as off;
 
+import 'models/product.dart';
+import 'screens/about_screen.dart';
+import 'screens/home_screen.dart';
 import 'screens/inventory_screen.dart';
 import 'screens/settings_screen.dart';
-import 'package:openfoodfacts/openfoodfacts.dart' as off;
-import 'screens/about_screen.dart';
-import 'themes/app_theme.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'services/database_service.dart';
 import 'services/settings_service.dart';
+import 'themes/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+
   off.OpenFoodAPIConfiguration.userAgent = off.UserAgent(name: 'Fridge Mate');
   off.OpenFoodAPIConfiguration.globalLanguages = [
     off.OpenFoodFactsLanguage.CZECH,
@@ -40,32 +44,32 @@ class FridgeMateApp extends StatefulWidget {
 class _FridgeMateAppState extends State<FridgeMateApp> {
   bool _isDarkMode = false;
   String _seedKey = 'green';
+
   @override
   void initState() {
     super.initState();
     _loadThemeSetting();
   }
 
-Future<void> _loadThemeSetting() async {
-  final dark = await SettingsService.getDarkMode();
-  final seedKey = await SettingsService.getThemeSeedKey();
+  Future<void> _loadThemeSetting() async {
+    final dark = await SettingsService.getDarkMode();
+    final seedKey = await SettingsService.getThemeSeedKey();
 
-  setState(() {
-    _isDarkMode = dark;
-    _seedKey = seedKey;
-  });
-}
+    setState(() {
+      _isDarkMode = dark;
+      _seedKey = seedKey;
+    });
+  }
 
   void _toggleDarkMode(bool value) async {
     await SettingsService.setDarkMode(value);
-    setState(() {
-      _isDarkMode = value;
-    });
+    setState(() => _isDarkMode = value);
   }
 
   @override
   Widget build(BuildContext context) {
     final seed = AppTheme.seedFromKey(_seedKey);
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Fridge Mate',
@@ -75,7 +79,7 @@ Future<void> _loadThemeSetting() async {
       theme: AppTheme.light(seedColor: seed),
       darkTheme: AppTheme.dark(seedColor: seed),
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: HomeScreen(
+      home: AppShell(
         isDarkMode: _isDarkMode,
         onThemeChanged: _toggleDarkMode,
         currentSeedKey: _seedKey,
@@ -87,13 +91,13 @@ Future<void> _loadThemeSetting() async {
   }
 }
 
-class HomeScreen extends StatefulWidget {
+class AppShell extends StatefulWidget {
   final bool isDarkMode;
   final Function(bool) onThemeChanged;
   final String currentSeedKey;
   final ValueChanged<String> onSeedChanged;
 
-  const HomeScreen({
+  const AppShell({
     super.key,
     required this.isDarkMode,
     required this.onThemeChanged,
@@ -102,25 +106,78 @@ class HomeScreen extends StatefulWidget {
   });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<AppShell> createState() => _AppShellState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
   int _tabIndex = 0;
+  int _expiredBadgeCount = 0;
 
-  final int _totalProducts = 24;
-  final int _expiringSoonCount = 3;
-  final int _expiredCount = 1;
-  final int _weeklyConsumed = 8;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _loadExpiredBadgeCount();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadExpiredBadgeCount();
+    }
+  }
+
+  Future<void> _loadExpiredBadgeCount() async {
+    try {
+      final data = await DatabaseService.instance.getAllProducts();
+      final products = data.map((e) => Product.fromMap(e)).toList();
+
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
+
+      final expired = products.where((p) {
+        final d = p.expirationDate;
+        if (d == null) return false;
+        final dd = DateTime(d.year, d.month, d.day);
+        return dd.isBefore(today);
+      }).length;
+
+      if (!mounted) return;
+      setState(() => _expiredBadgeCount = expired);
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  Widget _badgeIfNeeded({required Widget child}) {
+    if (_expiredBadgeCount <= 0) return child;
+
+    final text = _expiredBadgeCount > 99 ? '99+' : _expiredBadgeCount.toString();
+
+    return Badge(
+      label: Text(text),
+      child: child,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> pages = [_buildHomeScreen(), const InventoryScreen()];
+    final List<Widget> pages = [
+      const HomeScreen(),
+      InventoryScreen(
+        onInventoryChanged: _loadExpiredBadgeCount,
+      ),
+    ];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          //preklad
           _tabIndex == 0 ? 'home.title'.tr() : 'inventory.title'.tr(),
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
@@ -192,12 +249,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 300),
         child: pages[_tabIndex],
       ),
-
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
@@ -211,10 +266,11 @@ class _HomeScreenState extends State<HomeScreen> {
         child: NavigationBar(
           height: 64,
           selectedIndex: _tabIndex,
-          onDestinationSelected: (index) => setState(() => _tabIndex = index),
-          indicatorColor: Theme.of(
-            context,
-          ).colorScheme.primary.withOpacity(0.12),
+          onDestinationSelected: (index) {
+            setState(() => _tabIndex = index);
+            _loadExpiredBadgeCount();
+          },
+          indicatorColor: Theme.of(context).colorScheme.primary.withOpacity(0.12),
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: [
             NavigationDestination(
@@ -223,408 +279,17 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'nav.home'.tr(),
             ),
             NavigationDestination(
-              icon: const Icon(Icons.inventory_2_outlined, size: 22),
-              selectedIcon: const Icon(Icons.inventory_2, size: 22),
+              icon: _badgeIfNeeded(
+                child: const Icon(Icons.inventory_2_outlined, size: 22),
+              ),
+              selectedIcon: _badgeIfNeeded(
+                child: const Icon(Icons.inventory_2, size: 22),
+              ),
               label: 'nav.inventory'.tr(),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildHomeScreen() {
-    final isDarkMode = widget.isDarkMode;
-    final hasExpiringProducts = _expiringSoonCount > 0 || _expiredCount > 0;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          // 1. STATISTIKY - 4 karty
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            children: [
-              _buildStatCard(
-                'home.stats.total_products'.tr(),
-                _totalProducts,
-                Icons.inventory_2,
-                isDarkMode,
-              ),
-              _buildStatCard(
-                'home.stats.expiring_soon'.tr(),
-                _expiringSoonCount,
-                Icons.warning,
-                isDarkMode,
-              ),
-              _buildStatCard(
-                'home.stats.expired'.tr(),
-                _expiredCount,
-                Icons.error,
-                isDarkMode,
-              ),
-              _buildStatCard(
-                'home.stats.consumed'.tr(),
-                _weeklyConsumed,
-                Icons.analytics,
-                isDarkMode,
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 20),
-
-          // 2. UPOZORNĚNÍ
-          if (hasExpiringProducts) _buildWarningPanel(isDarkMode),
-
-          const SizedBox(height: 20),
-
-          // 3. RYCHLÉ AKCE
-          _buildQuickActions(isDarkMode),
-
-          const SizedBox(height: 20),
-
-          // 4. RYCHLÝ PŘÍSTUP
-          _buildQuickAccess(isDarkMode),
-
-          const SizedBox(height: 20),
-
-          // 5. AKTIVITA
-          _buildRecentActivity(isDarkMode),
-
-          const SizedBox(height: 20),
-
-          // 6. DOPORUČENÍ
-          _buildRecommendations(isDarkMode),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(
-    String title,
-    int count,
-    IconData icon,
-    bool isDarkMode,
-  ) {
-    return Card(
-      elevation: 2,
-      color: Theme.of(context).colorScheme.surface,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 32,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              count.toString(),
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWarningPanel(bool isDarkMode) {
-    return Card(
-      elevation: 2,
-      color: Theme.of(context).colorScheme.surfaceVariant,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Icon(Icons.warning, color: Colors.orange[700]),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'home.warning.title'.tr(),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange[800],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'home.warning.expiring'.tr(
-                      namedArgs: {'count': _expiringSoonCount.toString()},
-                    ),
-                    style: TextStyle(color: Colors.orange[700]),
-                  ),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                setState(() => _tabIndex = 1);
-              },
-              child: Text('home.warning.view'.tr()),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActions(bool isDarkMode) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'home.quick_actions.title'.tr(),
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionButton(
-                'home.quick_actions.add_manual'.tr(),
-                Icons.add,
-                () {
-                  // Otevře přidání produktu
-                },
-                isDarkMode,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                'home.quick_actions.scan_qr'.tr(),
-                Icons.qr_code_scanner,
-                () {
-                  // Otevře QR scanner
-                },
-                isDarkMode,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                'home.quick_actions.quick_pick'.tr(),
-                Icons.category,
-                () {
-                  // Otevře rychlý výběr
-                },
-                isDarkMode,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton(
-    String text,
-    IconData icon,
-    VoidCallback onTap,
-    bool isDarkMode,
-  ) {
-    return Card(
-      elevation: 2,
-      color: Theme.of(context).colorScheme.surface,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                size: 24,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                text,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickAccess(bool isDarkMode) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'home.quick_access.title'.tr(),
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-        ),
-        const SizedBox(height: 12),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          children: [
-            _buildQuickAccessCard(
-              'home.quick_access.shopping_list'.tr(),
-              Icons.shopping_cart,
-              isDarkMode,
-            ),
-            _buildQuickAccessCard(
-              'home.quick_access.stats'.tr(),
-              Icons.bar_chart,
-              isDarkMode,
-            ),
-            _buildQuickAccessCard(
-              'home.quick_access.recipes'.tr(),
-              Icons.restaurant_menu,
-              isDarkMode,
-            ),
-            _buildQuickAccessCard(
-              'home.quick_access.settings'.tr(),
-              Icons.settings,
-              isDarkMode,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickAccessCard(String title, IconData icon, bool isDarkMode) {
-    return Card(
-      elevation: 2,
-      color: Theme.of(context).colorScheme.surface,
-      child: InkWell(
-        onTap: () {
-          // Otevře příslušnou obrazovku
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 32,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecentActivity(bool isDarkMode) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'home.recent_activity.title'.tr(),
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          elevation: 2,
-          color: Theme.of(context).colorScheme.surface,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Zatím placeholder - později reálná data
-                Text(
-                  'home.recent_activity.empty'.tr(),
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecommendations(bool isDarkMode) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'home.recommendations.title'.tr(),
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          elevation: 2,
-          color: Theme.of(context).colorScheme.surface,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Zatím placeholder - později chytré tipy
-                Text(
-                  'home.recommendations.empty'.tr(),
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 

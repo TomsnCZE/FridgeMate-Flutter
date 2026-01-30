@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/product.dart';
 import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ProductDetailBottomSheet extends StatelessWidget {
   final Product product;
@@ -27,9 +28,8 @@ class ProductDetailBottomSheet extends StatelessWidget {
     final hasImage = product.extra?['localImagePath'] != null ||
         (product.imageUrl != null && product.imageUrl!.isNotEmpty);
 
-    final calories = product.extra?['calories'];
-    final type = product.extra?['type'] ?? 'Neuvedeno';
-    final location = product.extra?['location'] ?? product.category;
+    final typeLabel = _typeLabel(product).tr();
+    final locationLabel = _locationLabel(product).tr();
 
     return Container(
       decoration: BoxDecoration(
@@ -49,7 +49,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Detail produktu',
+                'product_detail.title'.tr(),
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -125,15 +125,15 @@ class ProductDetailBottomSheet extends StatelessWidget {
 
           _buildInfoSection(
             icon: Icons.location_on,
-            title: 'Umístění',
-            value: location,
+            title: 'product_detail.location_title'.tr(),
+            value: locationLabel,
             theme: theme,
           ),
 
           _buildInfoSection(
             icon: Icons.fastfood,
-            title: 'Typ produktu',
-            value: type,
+            title: 'product_detail.type_title'.tr(),
+            value: typeLabel,
             theme: theme,
           ),
 
@@ -141,25 +141,25 @@ class ProductDetailBottomSheet extends StatelessWidget {
           if (product.expirationDate != null)
             _buildInfoSection(
               icon: isExpired ? Icons.warning : Icons.calendar_today,
-              title: 'Datum spotřeby',
+              title: 'product_detail.expiration_title'.tr(),
               value: _formatDate(product.expirationDate!),
               isWarning: isExpired || isExpiringSoon,
-              warningText: isExpired ? 'PROŠLÉ' : (isExpiringSoon ? 'BRZY EXPIRUJE' : null),
+              warningText: isExpired ? 'inventory.status.expired'.tr().toUpperCase() : (isExpiringSoon ? 'inventory.status.soon'.tr().toUpperCase() : null),
               theme: theme,
             )
           else
             _buildInfoSection(
               icon: Icons.calendar_today,
-              title: 'Datum spotřeby',
-              value: 'Neuvedeno',
+              title: 'product_detail.expiration_title'.tr(),
+              value: 'product_detail.not_provided'.tr(),
               theme: theme,
             ),
 
-          // KALORIE
+          // MNOŽSTVÍ
           _buildInfoSection(
-            icon: Icons.local_fire_department,
-            title: 'Kalorie',
-            value: calories != null ? '$calories kcal/100g' : 'Neuvedeno',
+            icon: Icons.scale,
+            title: 'add_product.quantity'.tr(),
+            value: _formatQuantity(product),
             theme: theme,
           ),
 
@@ -189,8 +189,8 @@ class ProductDetailBottomSheet extends StatelessWidget {
                   Expanded(
                     child: Text(
                       isExpired 
-                          ? 'Produkt prošel expirací!'
-                          : 'Produkt brzy expiruje!',
+                          ? 'product_detail.expired_banner'.tr()
+                          : 'product_detail.expiring_banner'.tr(),
                       style: TextStyle(
                         color: isExpired ? colors.error : colors.primary,
                         fontWeight: FontWeight.w500,
@@ -216,7 +216,7 @@ class ProductDetailBottomSheet extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Žádná fotka',
+          'product_detail.no_photo'.tr(),
           style: TextStyle(
             color: colors.onSurface.withOpacity(0.4)
           ),
@@ -300,4 +300,72 @@ class ProductDetailBottomSheet extends StatelessWidget {
   String _formatDate(DateTime date) {
     return DateFormat('dd.MM.yyyy').format(date);
   }
+
+  String _typeLabel(Product p) {
+    final raw = (p.extra?['type'] ?? 'food').toString();
+    switch (raw) {
+      case 'food':
+      case 'Jídlo':
+        return 'add_product.food';
+      case 'beverage':
+      case 'Pití':
+      case 'Nápoj':
+        return 'add_product.beverage';
+      case 'other':
+      case 'Ostatní':
+        return 'add_product.other';
+      default:
+        return 'product_detail.not_provided';
+    }
+  }
+
+  String _locationLabel(Product p) {
+    final raw = (p.extra?['location'] ?? p.category).toString();
+    switch (raw) {
+      case 'fridge':
+      case 'Lednice':
+        return 'add_product.fridge';
+      case 'freezer':
+      case 'Mrazák':
+        return 'add_product.freezer';
+      case 'pantry':
+      case 'Spíž':
+        return 'add_product.pantry';
+      default:
+        // fall back to showing category as-is, but prefer not_provided if empty
+        return raw.trim().isEmpty ? 'product_detail.not_provided' : raw;
+    }
+  }
 }
+  String _unitKeyFromRaw(String raw) {
+    final v = raw.trim().toLowerCase();
+    // handle legacy + localized labels
+    if (v == 'ks' || v == 'pieces' || v == 'pcs' || v == 'stk.' || v == 'stk') {
+      return 'pieces';
+    }
+    if (v == 'g' || v == 'kg' || v == 'ml' || v == 'l') {
+      return v;
+    }
+    return 'pieces';
+  }
+
+  String _unitLabel(String unitKey) {
+    switch (unitKey) {
+      case 'pieces':
+        return 'add_product.pieces'.tr();
+      default:
+        // g/kg/ml/l are neutral abbreviations
+        return unitKey;
+    }
+  }
+
+  String _formatQuantity(Product p) {
+    final rawUnit = (p.extra?['unit'] ?? 'ks').toString();
+    final unitKey = _unitKeyFromRaw(rawUnit);
+    final unitText = _unitLabel(unitKey);
+
+    // keep it simple: show integers without .0
+    final q = p.quantity;
+    final qText = (q % 1 == 0) ? q.toInt().toString() : q.toString();
+    return '$qText $unitText';
+  }

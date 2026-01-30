@@ -1,13 +1,16 @@
-import 'package:easy_localization/easy_localization.dart';
-
 class Product {
   final int? id;
   final String name;
   final String? imageUrl;
   final String? brand;
+
+  // KEY: fridge/freezer/pantry
   final String category;
+
   final DateTime? expirationDate;
   final double quantity;
+
+  // extra: unit = ks/g/kg/ml/l, type = food/beverage/other
   final Map<String, dynamic>? extra;
 
   Product({
@@ -38,17 +41,17 @@ class Product {
   factory Product.fromMap(Map<String, dynamic> map) {
     return Product(
       id: map['id'] as int?,
-      name: map['name'],
-      brand: map['brand'],
-      category: map['category'] ?? 'add_product.food'.tr(),
+      name: map['name'] as String,
+      brand: map['brand'] as String?,
+      category: (map['category'] as String?) ?? 'fridge',
       quantity: (map['quantity'] as num?)?.toDouble() ?? 1.0,
       expirationDate: map['expirationDate'] != null
-          ? DateTime.tryParse(map['expirationDate'])
+          ? DateTime.tryParse(map['expirationDate'] as String)
           : null,
       extra: {
-        'unit': map['unit'] ?? 'add_product.pieces'.tr(),
-        'type': map['type'] ?? 'add_product.food'.tr(),
-        'localImagePath': map['localImagePath'],
+        'unit': (map['unit'] as String?) ?? 'ks',
+        'type': (map['type'] as String?) ?? 'food',
+        'localImagePath': map['localImagePath'] as String?,
       },
     );
   }

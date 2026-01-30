@@ -10,6 +10,7 @@ class AppTheme {
   static const String seedPurple = 'purple';
   static const String seedBlue = 'blue';
   static const String seedOrange = 'orange';
+  static const String seedPink = 'pink';
 
   // Default seed (když uživatel nic nezvolí)
   static const String defaultSeedKey = seedGreen;
@@ -20,6 +21,7 @@ class AppTheme {
     'blue': Color.fromARGB(255, 2, 136, 209),
     'purple': Color.fromARGB(255, 126, 87, 194),
     'orange': Color.fromARGB(255, 245, 124, 0),
+    'pink': Color.fromARGB(255, 216, 27, 96)
   };
 
   /// Vezme uložený klíč a vrátí barvu. Když klíč neexistuje, vrátí default.

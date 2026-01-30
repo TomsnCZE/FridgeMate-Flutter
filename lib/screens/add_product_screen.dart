@@ -22,16 +22,16 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _brandController = TextEditingController();
   final _quantityController = TextEditingController();
 
-  String _unit = 'add_product.pieces'.tr();
-  String _category = 'add_product.fridge'.tr();
-  String _type = 'add_product.food'.tr();
+  String _unit = 'ks';
+  String _category = 'fridge';
+  String _type = 'food';
   DateTime? _expirationDate;
   File? _selectedImage;
   String? _savedImagePath;
 
-  final List<String> _units = ['add_product.pieces'.tr(), 'g', 'kg', 'ml', 'l'];
-  final List<String> _categories = ['add_product.fridge'.tr(), 'add_product.freezer'.tr(), 'add_product.pantry'.tr()];
-  final List<String> _types = ['add_product.food'.tr(), 'add_product.beverage'.tr(), 'add_product.other'.tr()];
+  final List<String> _units = ['ks', 'g', 'kg', 'ml', 'l'];
+  final List<String> _categories = ['fridge', 'freezer', 'pantry'];
+  final List<String> _types = ['food', 'beverage', 'other'];
 
   @override
   void initState() {
@@ -42,9 +42,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
       _nameController.text = p.name;
       _brandController.text = p.brand ?? '';
       _quantityController.text = p.quantity.toString();
-      _unit = p.extra?['unit'] ?? 'ks';
+      _unit = (p.extra?['unit'] as String?) ?? 'ks';
       _category = p.category;
-      _type = p.extra?['type'] ?? 'Jídlo';
+      _type = (p.extra?['type'] as String?) ?? 'food';
       _expirationDate = p.expirationDate;
 
       final imagePath = p.extra?['localImagePath'];
@@ -111,8 +111,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _expirationDate ?? now,
-      firstDate: now,
-      lastDate: DateTime(now.year + 5),
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 10),
     );
 
     if (picked != null && mounted) {
@@ -184,6 +184,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _brandController.dispose();
     _quantityController.dispose();
     super.dispose();
+  }
+
+  String _unitLabel(String unit) {
+    if (unit == 'ks') return 'add_product.pieces'.tr();
+    return unit;
+  }
+
+  String _categoryLabel(String key) {
+    return 'add_product.$key'.tr();
+  }
+
+  String _typeLabel(String key) {
+    return 'add_product.$key'.tr();
   }
 
   @override
@@ -287,7 +300,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       ),
                       items: _units
                           .map(
-                            (u) => DropdownMenuItem(value: u, child: Text(u)),
+                            (u) => DropdownMenuItem(
+                              value: u,
+                              child: Text(_unitLabel(u)),
+                            ),
                           )
                           .toList(),
                       onChanged: (v) => setState(() => _unit = v!),
@@ -300,7 +316,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
               DropdownButtonFormField<String>(
                 value: _category,
                 items: _categories
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .map(
+                      (c) => DropdownMenuItem(
+                        value: c,
+                        child: Text(_categoryLabel(c)),
+                      ),
+                    )
                     .toList(),
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
@@ -315,7 +336,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
               DropdownButtonFormField<String>(
                 value: _type,
                 items: _types
-                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                    .map(
+                      (t) => DropdownMenuItem(
+                        value: t,
+                        child: Text(_typeLabel(t)),
+                      ),
+                    )
                     .toList(),
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),

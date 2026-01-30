@@ -13,6 +13,7 @@ class SettingsService {
 
   static const String _seedKey = 'theme_seed_key';
 
+
   static Future<String?> getLocaleCode() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_localeKey);
@@ -35,7 +36,7 @@ class SettingsService {
 
   static Future<String> getDefaultCategory() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_defaultCategoryKey) ?? 'Lednice';
+    return prefs.getString(_defaultCategoryKey) ?? 'fridge';
   }
 
   static Future<String> getDefaultUnit() async {

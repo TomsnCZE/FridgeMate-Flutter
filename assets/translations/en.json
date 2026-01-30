@@ -35,6 +35,18 @@
         }
     },
     "inventory": {
+        "filters": {
+            "title": "Filter products",
+            "category": "Location",
+            "type": "Product type",
+            "expiration": "Expiration status",
+            "reset": "Reset",
+            "apply": "Apply filters",
+            "expiration_fresh": "Fresh",
+            "expiration_soon": "Expiring soon",
+            "expiration_today": "Expires today",
+            "expiration_expired": "Expired"
+        },
         "status": {
             "expired": "Expired",
             "today": "Today",
@@ -93,7 +105,8 @@
                         "green": "Green",
                         "blue": "Blue",
                         "purple": "Purple",
-                        "orange": "Orange"
+                        "orange": "Orange",
+                        "pink": "Pink"
                     }
                 }
             },
@@ -185,6 +198,48 @@
         "add_to_inventory": "Add to inventory",
         "close": "Close",
         "not_provided": "Not provided",
-        "na": "N/A"
+        "na": "N/A",
+        "location_title": "Location",
+        "type_title": "Product type",
+        "expiration_title": "Expiration date",
+        "calories_title": "Calories",
+        "calories_value": "{value} kcal/100g",
+        "expired_banner": "This product has expired!",
+        "expiring_banner": "This product is expiring soon!",
+        "no_photo": "No photo"
+    },
+    "action_sheet": {
+        "adjust_quantity": "Adjust quantity",
+        "edit": "Edit",
+        "delete": "Delete",
+        "delete_title": "Delete product?",
+        "delete_confirm": "Are you sure you want to delete \"{name}\"?",
+        "current": "Current",
+        "result": "Result",
+        "select_step": "Select step",
+        "step": "Step",
+        "remove": "Remove",
+        "add": "Add",
+        "tip_hold": "Tip: hold + / − for faster change"
+    },
+    "common": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "all": "All"
+    },
+    "scanner": {
+        "title": "Scan barcode",
+        "torch": "Flash",
+        "hint": "Point the camera at the barcode.\nStart scanning with the button below.",
+        "status_scanning": "Scanning…",
+        "status_press_start": "Press “Start scanning”",
+        "status_last_code": "Last code: {code}",
+        "not_found_title": "Product not found",
+        "code_label": "Code: {code}",
+        "not_found_question": "Do you want to scan again, or add the product manually?",
+        "action_start": "Start scanning",
+        "action_stop": "Stop scanning",
+        "action_rescan": "Scan again",
+        "action_manual": "Add manually"
     }
 }

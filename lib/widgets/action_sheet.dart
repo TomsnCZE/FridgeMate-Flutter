@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../models/product.dart';
 import '../services/database_service.dart';
 import '../screens/product_edit_screen.dart';
@@ -43,7 +44,7 @@ class ProductActionSheet extends StatelessWidget {
 
             ListTile(
               leading: const Icon(Icons.swap_vert),
-              title: const Text('Upravit množství'),
+              title: Text('action_sheet.adjust_quantity'.tr()),
               onTap: () {
                 // zavře sheet a otevře dialog nad parentContext
                 Navigator.pop(context);
@@ -60,7 +61,7 @@ class ProductActionSheet extends StatelessWidget {
 
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Upravit'),
+              title: Text('action_sheet.edit'.tr()),
               onTap: () async {
                 Navigator.pop(context); // zavře sheet
 
@@ -80,24 +81,31 @@ class ProductActionSheet extends StatelessWidget {
 
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Smazat', style: TextStyle(color: Colors.red)),
+              title: Text(
+                'action_sheet.delete'.tr(),
+                style: const TextStyle(color: Colors.red),
+              ),
               onTap: () async {
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text('Smazat produkt?'),
-                    content: Text('Opravdu chceš smazat "${product.name}"?'),
+                    title: Text('action_sheet.delete_title'.tr()),
+                    content: Text(
+                      'action_sheet.delete_confirm'.tr(
+                        namedArgs: {'name': product.name},
+                      ),
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
-                        child: const Text('Zrušit'),
+                        child: Text('common.cancel'.tr()),
                       ),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                         ),
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Smazat'),
+                        child: Text('action_sheet.delete'.tr()),
                       ),
                     ],
                   ),
@@ -135,6 +143,29 @@ class QuantityAdjustDialog extends StatefulWidget {
 
 class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
     with SingleTickerProviderStateMixin {
+  String _unitKeyFromRaw(String raw) {
+    switch (raw) {
+      case 'ks':
+      case 'pieces':
+        return 'pieces';
+      case 'g':
+      case 'kg':
+      case 'ml':
+      case 'l':
+        return raw;
+      default:
+        return 'pieces';
+    }
+  }
+
+  String _unitLabel(String unitKey) {
+    switch (unitKey) {
+      case 'pieces':
+        return 'add_product.pieces'.tr(); // cs: ks, en: pcs, de: Stk.
+      default:
+        return unitKey; // g/kg/ml/l are neutral abbreviations
+    }
+  }
   // Removed: bool _isAdd = false; // default: Odebrat
   // Removed: double _delta = 0;
   // Removed: late final TextEditingController _deltaController;
@@ -153,10 +184,11 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
   void initState() {
     super.initState();
 
-    final unit = (widget.product.extra?['unit'] ?? 'ks').toString();
+    final rawUnit = (widget.product.extra?['unit'] ?? 'ks').toString();
+    final unit = _unitKeyFromRaw(rawUnit);
 
     // rozumný default kroku podle jednotky
-    if (unit == 'ks') {
+    if (unit == 'pieces') {
       _step = 1;
     } else if (unit == 'g' || unit == 'ml') {
       _step = 10;
@@ -205,7 +237,7 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
 
   List<double> _stepOptionsForUnit(String unit) {
     switch (unit) {
-      case 'ks':
+      case 'pieces':
         return const [1, 2, 5, 10];
       case 'g':
       case 'ml':
@@ -219,7 +251,8 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
   }
 
   void _applyStep(int direction) {
-    final unit = (widget.product.extra?['unit'] ?? 'ks').toString();
+    final rawUnit = (widget.product.extra?['unit'] ?? 'ks').toString();
+    final unit = _unitKeyFromRaw(rawUnit);
     final decimals = _decimalsForUnit(unit);
 
     double next = _result + (direction * _step);
@@ -271,7 +304,9 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final unit = (widget.product.extra?['unit'] ?? 'ks').toString();
+    final rawUnit = (widget.product.extra?['unit'] ?? 'ks').toString();
+    final unit = _unitKeyFromRaw(rawUnit);
+    final unitText = _unitLabel(unit);
 
     final steps = _stepOptionsForUnit(unit);
     if (!steps.contains(_step)) {
@@ -284,7 +319,7 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
         children: [
           Icon(Icons.swap_vert, color: theme.colorScheme.primary),
           const SizedBox(width: 10),
-          const Text('Upravit množství'),
+          Text('action_sheet.adjust_quantity'.tr()),
         ],
       ),
       content: Column(
@@ -306,24 +341,30 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Aktuálně',
-                  style: theme.textTheme.labelLarge?.copyWith(color: theme.hintColor),
+                  'action_sheet.current'.tr(),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.hintColor,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${_formatDelta(unit, _current)} $unit',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                  '${_formatDelta(unit, _current)} $unitText',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Divider(height: 1, color: theme.dividerColor),
                 const SizedBox(height: 10),
                 Text(
-                  'Výsledek',
-                  style: theme.textTheme.labelLarge?.copyWith(color: theme.hintColor),
+                  'action_sheet.result'.tr(),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.hintColor,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${_formatDelta(unit, _result)} $unit',
+                  '${_formatDelta(unit, _result)} $unitText',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: theme.colorScheme.primary,
@@ -345,7 +386,7 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
               border: Border.all(color: theme.dividerColor.withOpacity(0.8)),
             ),
             child: PopupMenuButton<double>(
-              tooltip: 'Vybrat krok',
+              tooltip: 'action_sheet.select_step'.tr(),
               elevation: 0, // žádný stín
               color: theme.cardColor,
               splashRadius: 18,
@@ -359,7 +400,7 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
                 for (final s in steps)
                   PopupMenuItem<double>(
                     value: s,
-                    child: Text('${_formatDelta(unit, s)} $unit'),
+                    child: Text('${_formatDelta(unit, s)} $unitText'),
                   ),
               ],
               child: Row(
@@ -368,7 +409,7 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Krok: ${_formatDelta(unit, _step)} $unit',
+                      '${'action_sheet.step'.tr()}: ${_formatDelta(unit, _step)} $unitText',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: theme.colorScheme.onSurface,
@@ -378,7 +419,10 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
                   ),
                   RotationTransition(
                     turns: Tween<double>(begin: 0.0, end: 0.5).animate(
-                      CurvedAnimation(parent: _chevronCtrl, curve: Curves.easeOut),
+                      CurvedAnimation(
+                        parent: _chevronCtrl,
+                        curve: Curves.easeOut,
+                      ),
                     ),
                     child: Icon(
                       Icons.keyboard_arrow_down,
@@ -397,7 +441,7 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
               Expanded(
                 child: _HoldButton(
                   icon: Icons.remove,
-                  label: 'Odebrat',
+                  label: 'action_sheet.remove'.tr(),
                   onTap: () => _applyStep(-1),
                   onHoldStart: () => _startHold(-1),
                   onHoldEnd: _stopHold,
@@ -407,7 +451,7 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
               Expanded(
                 child: _HoldButton(
                   icon: Icons.add,
-                  label: 'Přidat',
+                  label: 'action_sheet.add'.tr(),
                   onTap: () => _applyStep(1),
                   onHoldStart: () => _startHold(1),
                   onHoldEnd: _stopHold,
@@ -418,7 +462,7 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
 
           const SizedBox(height: 8),
           Text(
-            'Tip: podrž + / − pro rychlejší změnu',
+            'action_sheet.tip_hold'.tr(),
             style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
             textAlign: TextAlign.center,
           ),
@@ -427,22 +471,21 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Zrušit'),
+          child: Text('common.cancel'.tr()),
         ),
         ElevatedButton(
           onPressed: () async {
             if (widget.product.id == null) return;
 
-            await DatabaseService.instance.updateProduct(
-              widget.product.id!,
-              {'quantity': _result},
-            );
+            await DatabaseService.instance.updateProduct(widget.product.id!, {
+              'quantity': _result,
+            });
 
             if (!mounted) return;
             Navigator.pop(context);
             widget.onSaved();
           },
-          child: const Text('Uložit'),
+          child: Text('common.save'.tr()),
         ),
       ],
     );
@@ -477,7 +520,9 @@ class _HoldButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: theme.colorScheme.primary.withOpacity(0.12),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: theme.colorScheme.primary.withOpacity(0.35)),
+          border: Border.all(
+            color: theme.colorScheme.primary.withOpacity(0.35),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -35,6 +35,18 @@
         }
     },
     "inventory": {
+        "filters": {
+            "title": "Produkte filtern",
+            "category": "Ort",
+            "type": "Produkttyp",
+            "expiration": "Ablaufstatus",
+            "reset": "Zurücksetzen",
+            "apply": "Filter anwenden",
+            "expiration_fresh": "Frisch",
+            "expiration_soon": "Läuft bald ab",
+            "expiration_today": "Läuft heute ab",
+            "expiration_expired": "Abgelaufen"
+        },
         "status": {
             "expired": "Abgelaufen",
             "today": "Heute",
@@ -93,7 +105,8 @@
                         "green": "Grün",
                         "blue": "Blau",
                         "purple": "Lila",
-                        "orange": "Orange"
+                        "orange": "Orange",
+                        "pink": "Rosa"
                     }
                 }
             },
@@ -185,6 +198,48 @@
         "add_to_inventory": "Zum Vorrat hinzufügen",
         "close": "Schließen",
         "not_provided": "Nicht angegeben",
-        "na": "k. A."
+        "na": "k. A.",
+        "location_title": "Ort",
+        "type_title": "Produkttyp",
+        "expiration_title": "Mindesthaltbarkeitsdatum",
+        "calories_title": "Kalorien",
+        "calories_value": "{value} kcal/100g",
+        "expired_banner": "Dieses Produkt ist abgelaufen!",
+        "expiring_banner": "Dieses Produkt läuft bald ab!",
+        "no_photo": "Kein Foto"
+    },
+    "action_sheet": {
+        "adjust_quantity": "Menge anpassen",
+        "edit": "Bearbeiten",
+        "delete": "Löschen",
+        "delete_title": "Produkt löschen?",
+        "delete_confirm": "Möchtest du \"{name}\" wirklich löschen?",
+        "current": "Aktuell",
+        "result": "Ergebnis",
+        "select_step": "Schritt auswählen",
+        "step": "Schritt",
+        "remove": "Verringern",
+        "add": "Erhöhen",
+        "tip_hold": "Tipp: + / − gedrückt halten für schnellere Änderung"
+    },
+    "common": {
+        "cancel": "Abbrechen",
+        "save": "Speichern",
+        "all": "Alle"
+    },
+    "scanner": {
+        "title": "Barcode scannen",
+        "torch": "Blitz",
+        "hint": "Richte die Kamera auf den Barcode.\nStarte den Scan mit der Taste unten.",
+        "status_scanning": "Scan läuft…",
+        "status_press_start": "Drücke „Scan starten“",
+        "status_last_code": "Letzter Code: {code}",
+        "not_found_title": "Produkt nicht gefunden",
+        "code_label": "Code: {code}",
+        "not_found_question": "Möchtest du erneut scannen oder das Produkt manuell hinzufügen?",
+        "action_start": "Scan starten",
+        "action_stop": "Scan stoppen",
+        "action_rescan": "Erneut scannen",
+        "action_manual": "Manuell hinzufügen"
     }
 }

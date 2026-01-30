@@ -8,6 +8,7 @@ class ProductDetailScreen extends StatelessWidget {
   final Product product;
 
   const ProductDetailScreen({super.key, required this.product});
+  //kunda
 
   @override
   Widget build(BuildContext context) {

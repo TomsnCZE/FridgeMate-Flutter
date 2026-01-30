@@ -120,8 +120,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 theme: theme,
                 icon: Icons.color_lens_outlined,
                 title: 'settings.appearance.theme.primary.title'.tr(),
-                subtitle: 'settings.appearance.theme.primary.options.$_seedKey'
-                    .tr(),
+                subtitle: ('settings.appearance.theme.primary.options.$_seedKey'.tr()),
                 onTap: _showSeedDialog,
               ),
               _buildSettingRow(
@@ -224,27 +223,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () => _showComingSoon('settings.about.help.title'.tr()),
               ),
             ],
-          ),
-
-          const SizedBox(height: 18),
-
-          Center(
-            child: Column(
-              children: [
-                Text(
-                  'Verze aplikace: 1.0.0',
-                  style: TextStyle(color: theme.hintColor, fontSize: 13),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '© 2024',
-                  style: TextStyle(
-                    color: theme.hintColor.withOpacity(0.7),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
@@ -454,7 +432,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _showSeedDialog() {
     final theme = Theme.of(context);
-    const options = ['green', 'blue', 'purple', 'orange'];
+    const options = ['green', 'blue', 'purple', 'orange', 'pink'];
 
     showDialog(
       context: context,

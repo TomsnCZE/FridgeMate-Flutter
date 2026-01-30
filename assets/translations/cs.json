@@ -35,6 +35,18 @@
         }
     },
     "inventory": {
+        "filters": {
+            "title": "Filtrovat produkty",
+            "category": "Kategorie",
+            "type": "Typ produktu",
+            "expiration": "Stav expirace",
+            "reset": "Resetovat",
+            "apply": "Použít filtry",
+            "expiration_fresh": "Čerstvé",
+            "expiration_soon": "Brzy expiruje",
+            "expiration_today": "Dnes expiruje",
+            "expiration_expired": "Prošlé"
+        },
         "status": {
             "expired": "Expirováno",
             "today": "Dnes",
@@ -90,7 +102,8 @@
                         "green": "Zelená",
                         "blue": "Modrá",
                         "purple": "Fialová",
-                        "orange": "Oranžová"
+                        "orange": "Oranžová",
+                        "pink": "Růžová"
                     }
                 }
             },
@@ -183,6 +196,48 @@
         "add_to_inventory": "Přidat do skladu",
         "close": "Zavřít",
         "not_provided": "Neuvedeno",
-        "na": "N/A"
+        "na": "N/A",
+        "location_title": "Umístění",
+        "type_title": "Typ produktu",
+        "expiration_title": "Datum spotřeby",
+        "calories_title": "Kalorie",
+        "calories_value": "{value} kcal/100g",
+        "expired_banner": "Produkt prošel expirací!",
+        "expiring_banner": "Produkt brzy expiruje!",
+        "no_photo": "Žádná fotka"
+    },
+    "action_sheet": {
+        "adjust_quantity": "Upravit množství",
+        "edit": "Upravit",
+        "delete": "Smazat",
+        "delete_title": "Smazat produkt?",
+        "delete_confirm": "Opravdu chceš smazat \"{name}\"?",
+        "current": "Aktuálně",
+        "result": "Výsledek",
+        "select_step": "Vybrat krok",
+        "step": "Krok",
+        "remove": "Odebrat",
+        "add": "Přidat",
+        "tip_hold": "Tip: podrž + / − pro rychlejší změnu"
+    },
+    "common": {
+        "cancel": "Zrušit",
+        "save": "Uložit",
+        "all": "Vše"
+    },
+    "scanner": {
+        "title": "Skenovat čárový kód",
+        "torch": "Blesk",
+        "hint": "Namiř kameru na čárový kód.\nSkenování spustíš tlačítkem níže.",
+        "status_scanning": "Skenování běží…",
+        "status_press_start": "Stiskni „Spustit skenování“",
+        "status_last_code": "Poslední kód: {code}",
+        "not_found_title": "Produkt nebyl nalezen",
+        "code_label": "Kód: {code}",
+        "not_found_question": "Chceš skenovat znovu, nebo přidat produkt ručně?",
+        "action_start": "Spustit skenování",
+        "action_stop": "Zastavit skenování",
+        "action_rescan": "Skenovat znovu",
+        "action_manual": "Přidat ručně"
     }
 }

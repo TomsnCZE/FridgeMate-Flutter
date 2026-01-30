@@ -13,7 +13,9 @@ import '../services/settings_service.dart';
 import '../services/database_service.dart';
 
 class InventoryScreen extends StatefulWidget {
-  const InventoryScreen({super.key});
+  final VoidCallback? onInventoryChanged;
+
+  const InventoryScreen({super.key, this.onInventoryChanged});
 
   @override
   State<InventoryScreen> createState() => _InventoryScreenState();
@@ -54,6 +56,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
     setState(() {
       _products = data.map((e) => Product.fromMap(e)).toList();
     });
+
+    widget.onInventoryChanged?.call();
   }
 
   // přidání: očekává Product jako návrat z AddProductScreen
@@ -134,14 +138,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  void _toggleViewMode() async {
-    final newMode = _viewMode == 'list' ? 'grid' : 'list';
-    setState(() {
-      _viewMode = newMode;
-    });
-    await SettingsService.setViewMode(newMode);
-  }
-
   List<Product> get filteredProducts {
     return _products.where((p) {
       final matchesSearch = p.name.toLowerCase().contains(
@@ -209,16 +205,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 onPressed: _showFilterSheet,
                 icon: Icon(Icons.tune, color: cs.onSurfaceVariant),
               ),
-              IconButton(
-                tooltip: _viewMode == 'list'
-                    ? 'inventory.tooltip_grid'.tr()
-                    : 'inventory.tooltip_list'.tr(),
-                onPressed: _toggleViewMode,
-                icon: Icon(
-                  _viewMode == 'list' ? Icons.grid_view : Icons.view_list,
-                  color: cs.primary,
-                ),
-              ),
             ],
             onChanged: (val) {
               setState(() => _search = val);
@@ -231,9 +217,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ),
             elevation: const MaterialStatePropertyAll(0),
             shape: MaterialStatePropertyAll(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
-              ),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
             ),
           ),
         ),
@@ -249,9 +233,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     return filters.isEmpty
         ? 'inventory.active_filters_none'.tr()
-        : 'inventory.active_filters'.tr(namedArgs: {
-            'filters': filters.join(', '),
-          });
+        : 'inventory.active_filters'.tr(
+            namedArgs: {'filters': filters.join(', ')},
+          );
   }
 
   @override
@@ -301,12 +285,19 @@ class _InventoryScreenState extends State<InventoryScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.filter_alt, size: 16, color: theme.colorScheme.onSurfaceVariant),
+                  Icon(
+                    Icons.filter_alt,
+                    size: 16,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _getActiveFiltersText(),
-                      style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 14),
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                   InkWell(
@@ -354,12 +345,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   Expanded(
                     child: Text(
                       expiredCount > 0
-                          ? 'inventory.expiration.expired'.tr(namedArgs: {
-                              'count': expiredCount.toString(),
-                            })
-                          : 'inventory.expiration.expiring_soon'.tr(namedArgs: {
-                              'count': expiringSoonCount.toString(),
-                            }),
+                          ? 'inventory.expiration.expired'.tr(
+                              namedArgs: {'count': expiredCount.toString()},
+                            )
+                          : 'inventory.expiration.expiring_soon'.tr(
+                              namedArgs: {
+                                'count': expiringSoonCount.toString(),
+                              },
+                            ),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w500,
@@ -401,12 +394,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     ),
                   )
                 : _viewMode == 'list'
-                ? ListView.builder(
+                ? ListView.separated(
                     itemCount: filtered.length,
                     itemBuilder: (context, i) => ProductCard(
                       product: filtered[i],
                       onTap: () => _showProductDetail(filtered[i]),
                       onChanged: _loadProducts,
+                    ),
+                    separatorBuilder: (context, i) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: theme.colorScheme.outlineVariant.withOpacity(
+                          0.25,
+                        ),
+                      ),
                     ),
                   )
                 : GridView.builder(

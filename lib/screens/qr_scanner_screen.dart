@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../services/api_service.dart';
 import '../models/product.dart';
@@ -82,7 +83,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
               borderRadius: BorderRadius.circular(18),
             ),
             title: Text(
-              'Produkt nebyl nalezen',
+              'scanner.not_found_title'.tr(),
               style: theme.textTheme.titleLarge?.copyWith(color: cs.onSurface),
             ),
             content: Column(
@@ -90,12 +91,12 @@ class _QRScannerScreenState extends State<QRScannerScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Kód: $code',
+                  'scanner.code_label'.tr(namedArgs: {'code': code}),
                   style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurface),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Chceš skenovat znovu, nebo přidat produkt ručně?',
+                  'scanner.not_found_question'.tr(),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: cs.onSurface.withOpacity(0.8),
                   ),
@@ -108,7 +109,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(ctx, 'rescan'),
-                  child: const Text('Skenovat znovu'),
+                  child: Text('scanner.action_rescan'.tr()),
                 ),
               ),
               const SizedBox(height: 10),
@@ -116,7 +117,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(ctx, 'manual'),
-                  child: const Text('Přidat ručně'),
+                  child: Text('scanner.action_manual'.tr()),
                 ),
               ),
             ],
@@ -181,14 +182,14 @@ class _QRScannerScreenState extends State<QRScannerScreen>
         elevation: 0,
         centerTitle: false,
         title: Text(
-          'Skenovat čárový kód',
+          'scanner.title'.tr(),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
         ),
         actions: [
           IconButton(
-            tooltip: 'Blesk',
+            tooltip: 'scanner.torch'.tr(),
             onPressed: () async {
               await _controller.toggleTorch();
               if (mounted) setState(() => _isTorchOn = !_isTorchOn);
@@ -299,7 +300,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Namiř kameru na čárový kód.\nSkenování spustíš tlačítkem níže.',
+                        'scanner.hint'.tr(),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: cs.onSurface,
                           height: 1.2,
@@ -328,9 +329,9 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                 child: Text(
                   _lastScannedCode == null
                       ? (_isScanning
-                          ? 'Skenování běží…'
-                          : 'Stiskni „Spustit skenování“')
-                      : 'Poslední kód: $_lastScannedCode',
+                          ? 'scanner.status_scanning'.tr()
+                          : 'scanner.status_press_start'.tr())
+                      : 'scanner.status_last_code'.tr(namedArgs: {'code': _lastScannedCode!}),
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: cs.onSurface,
                   ),
@@ -361,12 +362,12 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                       ? OutlinedButton.icon(
                           onPressed: _stopScan,
                           icon: const Icon(Icons.pause),
-                          label: const Text('Zastavit skenování'),
+                          label: Text('scanner.action_stop'.tr()),
                         )
                       : ElevatedButton.icon(
                           onPressed: _startScan,
                           icon: const Icon(Icons.play_arrow),
-                          label: const Text('Spustit skenování'),
+                          label: Text('scanner.action_start'.tr()),
                         ),
                 ),
               ),

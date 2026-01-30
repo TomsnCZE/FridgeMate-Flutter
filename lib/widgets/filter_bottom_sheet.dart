@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class FilterBottomSheet extends StatefulWidget {
   final String currentCategory;
@@ -23,9 +24,9 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
   late String _selectedType;
   late String _selectedExpiration;
 
-  final List<String> _categories = ['Vše', 'Lednice', 'Mrazák', 'Spíž'];
-  final List<String> _types = ['Vše', 'Jídlo', 'Pití', 'Ostatní'];
-  final List<String> _expirations = ['Vše', 'Čerstvé', 'Brzy expiruje', 'Prošlé', 'Dnes expiruje'];
+  final List<String> _categories = ['all', 'fridge', 'freezer', 'pantry'];
+  final List<String> _types = ['all', 'food', 'beverage', 'other'];
+  final List<String> _expirations = ['all', 'fresh', 'soon', 'expired', 'today'];
 
   @override
   void initState() {
@@ -42,9 +43,9 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
   void _resetFilters() {
     setState(() {
-      _selectedCategory = 'Vše';
-      _selectedType = 'Vše';
-      _selectedExpiration = 'Vše';
+      _selectedCategory = 'all';
+      _selectedType = 'all';
+      _selectedExpiration = 'all';
     });
   }
 
@@ -69,7 +70,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Filtrovat produkty',
+                'inventory.filters.title'.tr(),
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -87,7 +88,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
           // FILTR PODLE KATEGORIE
           _buildFilterSection(
-            title: 'Kategorie',
+            title: 'inventory.filters.category'.tr(),
             options: _categories,
             selected: _selectedCategory,
             onChanged: (value) => setState(() => _selectedCategory = value),
@@ -98,7 +99,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
           // FILTR PODLE TYPU
           _buildFilterSection(
-            title: 'Typ produktu',
+            title: 'inventory.filters.type'.tr(),
             options: _types,
             selected: _selectedType,
             onChanged: (value) => setState(() => _selectedType = value),
@@ -109,7 +110,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
           // FILTR PODLE EXPIRACE
           _buildFilterSection(
-            title: 'Stav expirace',
+            title: 'inventory.filters.expiration'.tr(),
             options: _expirations,
             selected: _selectedExpiration,
             onChanged: (value) => setState(() => _selectedExpiration = value),
@@ -129,7 +130,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                     side: BorderSide(color: theme.dividerColor),
                   ),
                   child: Text(
-                    'Resetovat',
+                    'inventory.filters.reset'.tr(),
                     style: TextStyle(
                       color: theme.colorScheme.onSurface,
                     ),
@@ -145,7 +146,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
                     foregroundColor: theme.colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text('Použít filtry'),
+                  child: Text('inventory.filters.apply'.tr()),
                 ),
               ),
             ],
@@ -155,6 +156,43 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
         ],
       ),
     );
+  }
+
+  String _labelForOption(String key) {
+    switch (key) {
+      // common
+      case 'all':
+        return 'common.all';
+
+      // categories (locations)
+      case 'fridge':
+        return 'add_product.fridge';
+      case 'freezer':
+        return 'add_product.freezer';
+      case 'pantry':
+        return 'add_product.pantry';
+
+      // types
+      case 'food':
+        return 'add_product.food';
+      case 'beverage':
+        return 'add_product.beverage';
+      case 'other':
+        return 'add_product.other';
+
+      // expiration filters
+      case 'fresh':
+        return 'inventory.filters.expiration_fresh';
+      case 'soon':
+        return 'inventory.filters.expiration_soon';
+      case 'today':
+        return 'inventory.filters.expiration_today';
+      case 'expired':
+        return 'inventory.filters.expiration_expired';
+
+      default:
+        return key;
+    }
   }
 
   Widget _buildFilterSection({
@@ -183,7 +221,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
           children: options.map((option) {
             final isSelected = selected == option;
             return FilterChip(
-              label: Text(option),
+              label: Text(_labelForOption(option).tr()),
               selected: isSelected,
               onSelected: (selected) => onChanged(option),
               backgroundColor: theme.colorScheme.surfaceVariant,

@@ -5,6 +5,7 @@ import '../models/product.dart';
 import '../services/database_service.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class EditProductScreen extends StatefulWidget {
   final Product product;
@@ -28,10 +29,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
   File? _selectedImage;
   String? _originalImagePath;
   String? _savedImagePath;
+  bool _removeImageOnSave = false;
 
   final List<String> _units = ['ks', 'g', 'kg', 'ml', 'l'];
-  final List<String> _categories = ['Lednice', 'Mrazák', 'Spíž'];
-  final List<String> _types = ['Jídlo', 'Pití', 'Ostatní'];
+  final List<String> _categories = ['fridge', 'freezer', 'pantry'];
+  final List<String> _types = ['food', 'beverage', 'other'];
 
   @override
   void initState() {
@@ -39,10 +41,21 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _nameController.text = widget.product.name;
     _brandController.text = widget.product.brand ?? '';
     _quantityController.text = widget.product.quantity.toString();
-    _unit = widget.product.extra?['unit'] ?? 'ks';
-    _category = widget.product.category;
-    _type = widget.product.extra?['type'] ?? 'Jídlo';
+    _unit = (widget.product.extra?['unit'] as String?) ?? 'ks';
+    _category = _normalizeCategoryKey(widget.product.category);
+    _type = _normalizeTypeKey(widget.product.extra?['type']);
     _expirationDate = widget.product.expirationDate;
+
+    // Prevent DropdownButtonFormField assertion: value must be one of the items.
+    if (!_units.contains(_unit)) {
+      _unit = _units.first;
+    }
+    if (!_categories.contains(_category)) {
+      _category = _categories.first;
+    }
+    if (!_types.contains(_type)) {
+      _type = _types.first;
+    }
 
     final originalPath = widget.product.extra?['localImagePath'];
     if (originalPath != null &&
@@ -55,6 +68,37 @@ class _EditProductScreenState extends State<EditProductScreen> {
       _originalImagePath = null;
       _selectedImage = null;
     }
+  }
+
+  String _unitLabel(String unit) {
+    if (unit == 'ks') return 'add_product.pieces'.tr();
+    return unit;
+  }
+
+  String _categoryLabel(String key) {
+    return 'add_product.$key'.tr();
+  }
+
+  String _typeLabel(String key) {
+    return 'add_product.$key'.tr();
+  }
+
+  String _normalizeCategoryKey(dynamic raw) {
+    final v = (raw ?? '').toString().trim();
+    if (v == 'fridge' || v == 'freezer' || v == 'pantry') return v;
+    if (v == 'Lednice') return 'fridge';
+    if (v == 'Mrazák' || v == 'Mrazak') return 'freezer';
+    if (v == 'Spíž' || v == 'Spiz') return 'pantry';
+    return 'fridge';
+  }
+
+  String _normalizeTypeKey(dynamic raw) {
+    final v = (raw ?? '').toString().trim();
+    if (v == 'food' || v == 'beverage' || v == 'other') return v;
+    if (v == 'Jídlo' || v == 'Jidlo') return 'food';
+    if (v == 'Pití' || v == 'Piti' || v == 'Nápoj' || v == 'Napoj') return 'beverage';
+    if (v == 'Ostatní' || v == 'Ostatni') return 'other';
+    return 'food';
   }
 
   Future<File> _saveImagePermanently(String sourcePath) async {
@@ -78,6 +122,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         setState(() {
           _selectedImage = savedImage;
           _savedImagePath = savedImage.path;
+          _removeImageOnSave = false;
         });
       }
     } catch (e) {
@@ -98,6 +143,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         setState(() {
           _selectedImage = savedImage;
           _savedImagePath = savedImage.path;
+          _removeImageOnSave = false;
         });
       }
     } catch (e) {
@@ -109,6 +155,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
     setState(() {
       _selectedImage = null;
       _savedImagePath = null;
+      _originalImagePath = null; // user explicitly removed
+      _removeImageOnSave = true;
     });
   }
 
@@ -117,8 +165,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _expirationDate ?? now,
-      firstDate: now,
-      lastDate: DateTime(now.year + 5),
+      firstDate: DateTime(now.year - 1),
+      lastDate: DateTime(now.year + 10),
     );
     if (picked != null && mounted) {
       setState(() => _expirationDate = picked);
@@ -142,7 +190,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
       extra: {
         'unit': _unit,
         'type': _type,
-        'localImagePath': _savedImagePath ?? _originalImagePath,
+        'localImagePath': _removeImageOnSave ? null : (_savedImagePath ?? _originalImagePath),
       },
     );
 
@@ -176,7 +224,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         elevation: 0,
         centerTitle: false,
         title: Text(
-          'Upravit produkt',
+          'add_product.edit'.tr(),
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -206,22 +254,22 @@ class _EditProductScreenState extends State<EditProductScreen> {
               // NÁZEV
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Název produktu *',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'add_product.name'.tr() + ' *',
+                  border: const OutlineInputBorder(),
                   filled: false,
                 ),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Zadej název' : null,
+                    (v == null || v.trim().isEmpty) ? 'add_product.name_required'.tr() : null,
               ),
               const SizedBox(height: 16),
 
               // ZNAČKA
               TextFormField(
                 controller: _brandController,
-                decoration: const InputDecoration(
-                  labelText: 'Značka (nepovinné)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'add_product.brand'.tr(),
+                  border: const OutlineInputBorder(),
                   filled: false,
                 ),
               ),
@@ -235,15 +283,15 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     child: TextFormField(
                       controller: _quantityController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Množství *',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'add_product.quantity'.tr() + ' *',
+                        border: const OutlineInputBorder(),
                         filled: false,
                       ),
                       validator: (v) {
-                        if (v == null || v.isEmpty) return 'Zadej množství';
+                        if (v == null || v.isEmpty) return 'add_product.quantity_required'.tr();
                         final num = double.tryParse(v);
-                        if (num == null || num <= 0) return 'Neplatné množství';
+                        if (num == null || num <= 0) return 'add_product.quantity_invalid'.tr();
                         return null;
                       },
                     ),
@@ -253,14 +301,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     flex: 1,
                     child: DropdownButtonFormField<String>(
                       value: _unit,
-                      decoration: const InputDecoration(
-                        labelText: 'Jednotka',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: 'add_product.unit'.tr(),
+                        border: const OutlineInputBorder(),
                         filled: false,
                       ),
                       items: _units
                           .map(
-                            (u) => DropdownMenuItem(value: u, child: Text(u)),
+                            (u) => DropdownMenuItem(value: u, child: Text(_unitLabel(u))),
                           )
                           .toList(),
                       onChanged: (v) => setState(() => _unit = v ?? 'ks'),
@@ -273,30 +321,30 @@ class _EditProductScreenState extends State<EditProductScreen> {
               // UMÍSTĚNÍ
               DropdownButtonFormField<String>(
                 value: _category,
-                decoration: const InputDecoration(
-                  labelText: 'Umístění',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'add_product.location'.tr(),
+                  border: const OutlineInputBorder(),
                   filled: false,
                 ),
                 items: _categories
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                    .map((c) => DropdownMenuItem(value: c, child: Text(_categoryLabel(c))))
                     .toList(),
-                onChanged: (v) => setState(() => _category = v ?? 'Lednice'),
+                onChanged: (v) => setState(() => _category = v ?? 'fridge'),
               ),
               const SizedBox(height: 16),
 
               // TYP PRODUKTU
               DropdownButtonFormField<String>(
                 value: _type,
-                decoration: const InputDecoration(
-                  labelText: 'Typ produktu',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'add_product.product_type'.tr(),
+                  border: const OutlineInputBorder(),
                   filled: false,
                 ),
                 items: _types
-                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                    .map((t) => DropdownMenuItem(value: t, child: Text(_typeLabel(t))))
                     .toList(),
-                onChanged: (v) => setState(() => _type = v ?? 'Jídlo'),
+                onChanged: (v) => setState(() => _type = v ?? 'food'),
               ),
               const SizedBox(height: 16),
 
@@ -304,9 +352,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
               InkWell(
                 onTap: _selectDate,
                 child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Datum spotřeby',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: 'add_product.expiration_date'.tr(),
+                    border: const OutlineInputBorder(),
                     filled: false,
                   ),
                   child: Row(
@@ -315,7 +363,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       Text(
                         _expirationDate != null
                             ? '${_expirationDate!.day}.${_expirationDate!.month}.${_expirationDate!.year}'
-                            : 'Vyber datum',
+                            : 'add_product.pick_date'.tr(),
                       ),
                       const Icon(Icons.calendar_today),
                     ],
@@ -330,14 +378,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Zrušit'),
+                      child: Text('add_product.close'.tr()),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _submit,
-                      child: const Text('Uložit'),
+                      child: Text('add_product.save_changes'.tr()),
                     ),
                   ),
                 ],
@@ -353,9 +401,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Fotka produktu',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        Text(
+          'add_product.photo'.tr(),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
 
@@ -393,7 +441,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
               Expanded(
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.photo_library),
-                  label: const Text('Galerie'),
+                  label: Text('add_product.gallery'.tr()),
                   onPressed: _pickFromGallery,
                 ),
               ),
@@ -401,25 +449,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
               Expanded(
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.camera_alt),
-                  label: const Text('Fotoaparát'),
+                  label: Text('add_product.photo'.tr()),
                   onPressed: _takePhoto,
                 ),
               ),
             ],
           ),
 
-        if (_originalImagePath != null && _selectedImage == null)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              'Použije se původní fotka',
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).hintColor,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
       ],
     );
   }
