@@ -11,10 +11,7 @@ import 'services/settings_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-
   off.OpenFoodAPIConfiguration.userAgent = off.UserAgent(name: 'Fridge Mate');
-
-  // Default language for OFF (you can later sync this with the selected locale if you want)
   off.OpenFoodAPIConfiguration.globalLanguages = [
     off.OpenFoodFactsLanguage.CZECH,
   ];
