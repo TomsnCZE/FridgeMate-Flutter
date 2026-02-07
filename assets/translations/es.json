@@ -1,0 +1,258 @@
+{
+    "home": {
+        "title": "Inicio",
+        "stats": {
+            "total_products": "Productos totales",
+            "expiring_soon": "Próximos a caducar",
+            "expired": "Caducados",
+            "consumed": "Consumidos"
+        },
+        "warning": {
+            "title": "¡Revisa las fechas de caducidad!",
+            "expiring": "{count} productos están a punto de caducar",
+            "view": "Ver"
+        },
+        "quick_actions": {
+            "title": "Acciones rápidas",
+            "add_manual": "Añadir manualmente",
+            "scan_qr": "Escanear QR",
+            "quick_pick": "Selección rápida"
+        },
+        "quick_access": {
+            "title": "Acceso rápido",
+            "shopping_list": "Lista de la compra",
+            "stats": "Estadísticas",
+            "recipes": "Recetas",
+            "settings": "Ajustes"
+        },
+        "recent_activity": {
+            "title": "Actividad reciente",
+            "empty": "Aún no hay actividad"
+        },
+        "recommendations": {
+            "title": "Recomendaciones",
+            "empty": "Añade más productos para obtener recomendaciones personalizadas"
+        }
+    },
+    "inventory": {
+        "filters": {
+            "title": "Filtrar productos",
+            "category": "Ubicación",
+            "type": "Tipo de producto",
+            "expiration": "Estado de caducidad",
+            "reset": "Restablecer",
+            "apply": "Aplicar filtros",
+            "expiration_fresh": "Fresco",
+            "expiration_soon": "Próximo a caducar",
+            "expiration_today": "Caduca hoy",
+            "expiration_expired": "Caducado"
+        },
+        "status": {
+            "expired": "Caducado",
+            "today": "Hoy",
+            "soon": "Pronto",
+            "fresh": "Fresco"
+        },
+        "title": "Inventario",
+        "search_hint": "Buscar producto…",
+        "tooltip_filter": "Filtrar",
+        "tooltip_grid": "Mostrar como cuadrícula",
+        "tooltip_list": "Mostrar como lista",
+        "active_filters_none": "No hay filtros activos",
+        "active_filters": "Filtros: {filters}",
+        "clear_filters": "Borrar filtros",
+        "snackbar_added": "{name} fue añadido al inventario",
+        "expiration": {
+            "today": {
+                "one": "{count} producto caduca hoy",
+                "other": "{count} productos caducan hoy"
+            },
+            "expired": {
+                "one": "{count} producto ha caducado",
+                "other": "{count} productos han caducado"
+            },
+            "expiring_soon": {
+                "one": "{count} producto está a punto de caducar",
+                "other": "{count} productos están a punto de caducar"
+            }
+        },
+        "empty": {
+            "title": "No hay productos",
+            "subtitle_filters": "Intenta cambiar los filtros",
+            "subtitle_no_products": "Añade tu primer producto con el botón +"
+        },
+        "actions": {
+            "add_manual": "Añadir manualmente",
+            "scan_qr": "Escanear"
+        }
+    },
+    "nav": {
+        "home": "Inicio",
+        "inventory": "Inventario"
+    },
+    "menu": {
+        "title": "Menú",
+        "settings": "Ajustes",
+        "about": "Acerca de",
+        "nutriscore_test": "Prueba Nutri-Score"
+    },
+    "settings": {
+        "title": "Ajustes",
+        "appearance": {
+            "title": "Apariencia",
+            "dark": {
+                "title": "Modo oscuro",
+                "subtitle": "Cambiar entre modo claro y oscuro"
+            },
+            "theme": {
+                "title": "Tema de color",
+                "subtitle": "Cambiar el color principal y el estilo de la app",
+                "primary": {
+                    "title": "Color principal",
+                    "subtitle": "Elige un color para generar el tema completo",
+                    "dialog_title": "Color principal",
+                    "options": {
+                        "green": "Verde",
+                        "blue": "Azul",
+                        "purple": "Morado",
+                        "orange": "Naranja",
+                        "pink": "Rosa"
+                    }
+                }
+            },
+            "language": {
+                "title": "Idioma de la aplicación",
+                "dialog_title": "Idioma",
+                "cs": "Checo",
+                "en": "Inglés",
+                "de": "Alemán",
+                "fr": "Francés",
+                "es": "Español",
+                "it": "Italiano"
+            }
+        },
+        "alerts": {
+            "title": "Alertas",
+            "notifications": {
+                "title": "Notificaciones",
+                "subtitle": "Activar o desactivar notificaciones de caducidad"
+            },
+            "expiration": {
+                "title": "Avisar antes de caducar",
+                "dialog_title": "Avisar antes de caducar",
+                "before": {
+                    "one": "{count} día antes de caducar",
+                    "other": "{count} días antes de caducar"
+                }
+            }
+        },
+        "behavior": {
+            "title": "Comportamiento de la app",
+            "haptics": {
+                "title": "Háptica",
+                "subtitle": "Vibrar en acciones"
+            },
+            "sounds": {
+                "title": "Sonidos",
+                "subtitle": "Reproducir sonidos en acciones"
+            }
+        },
+        "about": {
+            "title": "Acerca de",
+            "info": {
+                "title": "Información",
+                "subtitle": "Información básica sobre la aplicación"
+            },
+            "help": {
+                "title": "Ayuda",
+                "subtitle": "Ver ayuda para usar la aplicación"
+            },
+            "coming_soon": "Próximamente"
+        },
+        "common": {
+            "ok": "OK",
+            "off": "Desactivado"
+        }
+    },
+    "add_product": {
+        "add": "Añadir producto",
+        "edit": "Editar producto",
+        "close": "Cerrar",
+        "name": "Nombre del producto",
+        "name_required": "El nombre del producto es obligatorio",
+        "brand": "Marca",
+        "quantity": "Cantidad",
+        "quantity_required": "La cantidad es obligatoria",
+        "quantity_invalid": "Cantidad inválida",
+        "unit": "Unidades",
+        "location": "Ubicación",
+        "product_type": "Tipo de producto",
+        "expiration_date": "Fecha de caducidad",
+        "save_changes": "Guardar",
+        "photo": "Foto",
+        "remove": "Eliminar foto",
+        "gallery": "Galería",
+        "photo_remove": "Eliminar foto",
+        "pick_date": "Elegir fecha",
+        "food": "Comida",
+        "beverage": "Bebida",
+        "other": "Otro",
+        "pieces": "uds",
+        "fridge": "Nevera",
+        "freezer": "Congelador",
+        "pantry": "Despensa"
+    },
+    "product_detail": {
+        "title": "Detalles del producto",
+        "category": "Categoría: {value}",
+        "type": "Tipo: {value}",
+        "calories": "Calorías: {value} kcal / 100g",
+        "ingredients_title": "Ingredientes:",
+        "add_to_inventory": "Añadir al inventario",
+        "close": "Cerrar",
+        "not_provided": "No proporcionado",
+        "na": "N/D",
+        "location_title": "Ubicación",
+        "type_title": "Tipo de producto",
+        "expiration_title": "Fecha de caducidad",
+        "calories_title": "Calorías",
+        "calories_value": "{value} kcal/100g",
+        "expired_banner": "¡Este producto ha caducado!",
+        "expiring_banner": "¡Este producto está a punto de caducar!",
+        "no_photo": "Sin foto"
+    },
+    "action_sheet": {
+        "adjust_quantity": "Ajustar cantidad",
+        "edit": "Editar",
+        "delete": "Eliminar",
+        "delete_title": "¿Eliminar producto?",
+        "delete_confirm": "¿Seguro que quieres eliminar \"{name}\"?",
+        "current": "Actual",
+        "result": "Resultado",
+        "select_step": "Seleccionar paso",
+        "step": "Paso",
+        "remove": "Quitar",
+        "add": "Añadir",
+        "tip_hold": "Consejo: mantén + / − para cambiar más rápido"
+    },
+    "common": {
+        "cancel": "Cancelar",
+        "save": "Guardar",
+        "all": "Todos"
+    },
+    "scanner": {
+        "title": "Escanear código de barras",
+        "torch": "Flash",
+        "hint": "Apunta la cámara al código de barras.\nPulsa el botón para comenzar.",
+        "status_scanning": "Escaneando…",
+        "status_press_start": "Pulsa «Iniciar escaneo»",
+        "status_last_code": "Último código: {code}",
+        "not_found_title": "Producto no encontrado",
+        "code_label": "Código: {code}",
+        "not_found_question": "¿Quieres escanear de nuevo o añadir el producto manualmente?",
+        "action_start": "Iniciar escaneo",
+        "action_stop": "Detener escaneo",
+        "action_rescan": "Escanear de nuevo",
+        "action_manual": "Añadir manualmente"
+    }
+}

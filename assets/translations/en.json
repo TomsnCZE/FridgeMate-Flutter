@@ -63,8 +63,18 @@
         "clear_filters": "Clear filters",
         "snackbar_added": "{name} was added to inventory",
         "expiration": {
-            "expired": "{count} products are expired",
-            "expiring_soon": "{count} products are expiring soon"
+            "today": {
+                "one": "{count} product expires today",
+                "other": "{count} products expire today"
+            },
+            "expired": {
+                "one": "{count} product has expired",
+                "other": "{count} products have expired"
+            },
+            "expiring_soon": {
+                "one": "{count} product is expiring soon",
+                "other": "{count} products are expiring soon"
+            }
         },
         "empty": {
             "title": "No products",
@@ -115,7 +125,10 @@
                 "dialog_title": "Language",
                 "cs": "Czech",
                 "en": "English",
-                "de": "German"
+                "de": "German",
+                "fr": "French",
+                "es": "Spanish",
+                "it": "Italian"
             }
         },
         "alerts": {

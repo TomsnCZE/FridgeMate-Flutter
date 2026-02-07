@@ -342,7 +342,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _showLanguageDialog() {
     final theme = Theme.of(context);
-    final options = ['cs', 'en', 'de'];
+    final options = ['cs', 'en', 'de', 'fr', 'es', 'it'];
 
     showDialog(
       context: context,

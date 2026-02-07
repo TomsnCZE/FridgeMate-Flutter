@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import '../models/product.dart';
 import '../widgets/product_card.dart';
-import '../widgets/product_grid_card.dart';
 import '../widgets/product_detail_bottom_sheet.dart';
 import '../widgets/filter_bottom_sheet.dart';
 import '../screens/qr_scanner_screen.dart';
@@ -225,11 +224,62 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
+    String _trFilterLabel(String raw) {
+    // Handle already-localized Czech labels coming from older data/UI
+    const csToKey = {
+      'Jídlo': 'food',
+      'Pití': 'beverage',
+      'Nápoj': 'beverage',
+      'Ostatní': 'other',
+      'Lednice': 'fridge',
+      'Mrazák': 'freezer',
+      'Spíž': 'pantry',
+      'ks': 'pieces',
+      'Čerstvé': 'fresh',
+      'Brzy expiruje': 'soon',
+      'Dnes expiruje': 'today',
+      'Prošlé': 'expired',
+    };
+
+    final key = csToKey[raw] ?? raw;
+
+    // add_product.* keys
+    const addProductKeys = {
+      'food',
+      'beverage',
+      'other',
+      'fridge',
+      'freezer',
+      'pantry',
+      'pieces',
+    };
+    if (addProductKeys.contains(key)) {
+      return 'add_product.$key'.tr();
+    }
+
+    // inventory.status.* keys
+    const statusKeys = {'expired', 'today', 'soon', 'fresh'};
+    if (statusKeys.contains(key)) {
+      return 'inventory.status.$key'.tr();
+    }
+
+    // Fall back (already a readable label)
+    return raw;
+  }
+
+
   String _getActiveFiltersText() {
-    final filters = [];
-    if (_filterCategory != 'Vše') filters.add(_filterCategory);
-    if (_filterType != 'Vše') filters.add(_filterType);
-    if (_filterExpiration != 'Vše') filters.add(_filterExpiration);
+    final filters = <String>[];
+    if (_filterCategory != 'Vše') {
+      filters.add(_trFilterLabel(_filterCategory));
+    }
+    if (_filterType != 'Vše') {
+      filters.add(_trFilterLabel(_filterType));
+    }
+    if (_filterExpiration != 'Vše') {
+      filters.add(_trFilterLabel(_filterExpiration));
+    }
+
 
     return filters.isEmpty
         ? 'inventory.active_filters_none'.tr()
@@ -237,6 +287,54 @@ class _InventoryScreenState extends State<InventoryScreen> {
             namedArgs: {'filters': filters.join(', ')},
           );
   }
+
+    String _expirationBannerText({
+    required int expired,
+    required int today,
+    required int soon,
+  }) {
+    final lang = context.locale.languageCode;
+
+    // Priority: expired > today > soon
+    if (expired > 0) {
+      if (lang == 'cs') {
+        if (expired == 1) return '1 produkt prošel expirací';
+        if (expired >= 2 && expired <= 4) {
+          return '$expired produkty prošly expirací';
+        }
+        return '$expired produktů prošlo expirací';
+      }
+      return 'inventory.expiration.expired'.plural(
+        expired,
+        namedArgs: {'count': '$expired'},
+      );
+    }
+
+    if (today > 0) {
+      if (lang == 'cs') {
+        if (today == 1) return '1 produkt expiruje dnes';
+        if (today >= 2 && today <= 4) return '$today produkty expirují dnes';
+        return '$today produktů expiruje dnes';
+      }
+      return 'inventory.expiration.today'.plural(
+        today,
+        namedArgs: {'count': '$today'},
+      );
+    }
+
+    // soon > 0
+    if (lang == 'cs') {
+      if (soon == 1) return '1 produkt brzy expiruje';
+      if (soon >= 2 && soon <= 4) return '$soon produkty brzy expirují';
+      return '$soon produktů brzy expiruje';
+    }
+
+    return 'inventory.expiration.expiring_soon'.plural(
+      soon,
+      namedArgs: {'count': '$soon'},
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -249,22 +347,31 @@ class _InventoryScreenState extends State<InventoryScreen> {
         _filterType != 'Vše' ||
         _filterExpiration != 'Vše';
 
-    final expiredCount = _products
-        .where(
-          (p) =>
-              p.expirationDate != null &&
-              p.expirationDate!.isBefore(DateTime.now()),
-        )
-        .length;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
 
-    final expiringSoonCount = _products
-        .where(
-          (p) =>
-              p.expirationDate != null &&
-              p.expirationDate!.isAfter(DateTime.now()) &&
-              p.expirationDate!.difference(DateTime.now()).inDays <= 3,
-        )
-        .length;
+    final expiredCount = _products.where((p) {
+      final d = p.expirationDate;
+      if (d == null) return false;
+      final exp = DateTime(d.year, d.month, d.day);
+      return exp.isBefore(today);
+    }).length;
+
+        final todayCount = _products.where((p) {
+      final d = p.expirationDate;
+      if (d == null) return false;
+      final exp = DateTime(d.year, d.month, d.day);
+      return exp.isAtSameMomentAs(today);
+    }).length;
+
+    final expiringSoonCount = _products.where((p) {
+      final d = p.expirationDate;
+      if (d == null) return false;
+      final exp = DateTime(d.year, d.month, d.day);
+      final diff = exp.difference(today).inDays;
+      return diff >= 1 && diff <= 3;
+    }).length;
+
 
     return Scaffold(
       body: Column(
@@ -322,7 +429,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ),
 
           // UPOZORNĚNÍ NA EXPIRACI
-          if (expiredCount > 0 || expiringSoonCount > 0)
+          if (expiredCount > 0 || todayCount > 0 || expiringSoonCount > 0)
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               padding: const EdgeInsets.all(12),
@@ -344,15 +451,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      expiredCount > 0
-                          ? 'inventory.expiration.expired'.tr(
-                              namedArgs: {'count': expiredCount.toString()},
-                            )
-                          : 'inventory.expiration.expiring_soon'.tr(
-                              namedArgs: {
-                                'count': expiringSoonCount.toString(),
-                              },
-                            ),
+                      _expirationBannerText(
+                        expired: expiredCount,
+                        today: todayCount,
+                        soon: expiringSoonCount,
+                      ),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.primary,
                         fontWeight: FontWeight.w500,
@@ -394,41 +497,25 @@ class _InventoryScreenState extends State<InventoryScreen> {
                     ),
                   )
                 : _viewMode == 'list'
-                ? ListView.separated(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, i) => ProductCard(
-                      product: filtered[i],
-                      onTap: () => _showProductDetail(filtered[i]),
-                      onChanged: _loadProducts,
-                    ),
-                    separatorBuilder: (context, i) => Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Divider(
-                        height: 1,
-                        thickness: 1,
-                        color: theme.colorScheme.outlineVariant.withOpacity(
-                          0.25,
+                    ? ListView.separated(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, i) => ProductCard(
+                          product: filtered[i],
+                          onTap: () => _showProductDetail(filtered[i]),
+                          onChanged: _loadProducts,
                         ),
-                      ),
-                    ),
-                  )
-                : GridView.builder(
-                    padding: const EdgeInsets.all(12),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 8,
-                          mainAxisSpacing: 8,
-                          childAspectRatio: 0.75,
+                        separatorBuilder: (context, i) => Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: theme.colorScheme.outlineVariant.withOpacity(
+                              0.25,
+                            ),
+                          ),
                         ),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, i) => ProductGridCard(
-                      product: filtered[i],
-                      index: _products.indexOf(filtered[i]),
-                      onTap: () => _showProductDetail(filtered[i]),
-                      onChanged: _loadProducts,
-                    ),
-                  ),
+                      )
+                    : const SizedBox.shrink(),
           ),
         ],
       ),

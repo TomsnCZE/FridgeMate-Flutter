@@ -112,7 +112,10 @@
                 "dialog_title": "Jazyk",
                 "cs": "Čeština",
                 "en": "Angličtina",
-                "de": "Němčina"
+                "de": "Němčina",
+                "fr": "Francouzština",
+                "es": "Španělština",
+                "it": "Italština"
             }
         },
         "alerts": {

@@ -13,18 +13,27 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _loading = true;
   int _warningDays = 3;
+  int get _soonWindowDays => _warningDays == 0 ? 3 : _warningDays;
   List<Product> _products = [];
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    // první load
     _load();
+
+    // iOS: po prvním vykreslení to často chytne správný stav (db + prefs)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _load(force: true);
+    });
   }
 
-  Future<void> _load() async {
+Future<void> _load({bool force = false}) async {
     try {
       final warningDays = await SettingsService.getExpirationWarningDays();
       final data = await DatabaseService.instance.getAllProducts();
@@ -65,14 +74,14 @@ class _HomeScreenState extends State<HomeScreen> {
   int get _expiringSoonCount {
     return _products.where((p) {
       final diff = _daysToExpiration(p.expirationDate);
-      return diff != null && diff >= 0 && diff <= _warningDays;
+      return diff != null && diff >= 0 && diff <= _soonWindowDays;
     }).length;
   }
 
   List<Product> get _expiringSoonList {
     final list = _products.where((p) {
       final diff = _daysToExpiration(p.expirationDate);
-      return diff != null && diff >= 0 && diff <= _warningDays;
+      return diff != null && diff >= 0 && diff <= _soonWindowDays;
     }).toList();
 
     list.sort((a, b) {
@@ -131,7 +140,8 @@ class _HomeScreenState extends State<HomeScreen> {
               children: _expiringSoonList
                   .take(5)
                   .map(
-                    (p) => _ProductRow(product: p, warningDays: _warningDays),
+                    (p) =>
+                        _ProductRow(product: p, warningDays: _soonWindowDays),
                   )
                   .toList(),
             ),

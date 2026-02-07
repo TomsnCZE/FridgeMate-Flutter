@@ -1,7 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:io' show Platform;
 import 'package:openfoodfacts/openfoodfacts.dart' as off;
-
 import 'models/product.dart';
 import 'screens/about_screen.dart';
 import 'screens/home_screen.dart';
@@ -13,6 +14,13 @@ import 'themes/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Android only: keep the top status bar, hide only the bottom system navigation bar.
+  if (Platform.isAndroid) {
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [SystemUiOverlay.top],
+    );
+  }
   await EasyLocalization.ensureInitialized();
 
   off.OpenFoodAPIConfiguration.userAgent = off.UserAgent(name: 'Fridge Mate');
@@ -25,7 +33,7 @@ Future<void> main() async {
 
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('cs'), Locale('en'), Locale('de')],
+      supportedLocales: const [Locale('cs'), Locale('en'), Locale('de'), Locale('fr'), Locale('es'), Locale('it')],
       path: 'assets/translations',
       fallbackLocale: const Locale('cs'),
       startLocale: startLocale,

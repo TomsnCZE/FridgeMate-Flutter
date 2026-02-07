@@ -1,8 +1,6 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import '../models/product.dart';
-import 'package:intl/intl.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 class ProductDetailBottomSheet extends StatelessWidget {
@@ -140,11 +138,9 @@ class ProductDetailBottomSheet extends StatelessWidget {
           // DATUM SPOTŘEBY
           if (product.expirationDate != null)
             _buildInfoSection(
-              icon: isExpired ? Icons.warning : Icons.calendar_today,
+              icon: Icons.calendar_today,
               title: 'product_detail.expiration_title'.tr(),
               value: _formatDate(product.expirationDate!),
-              isWarning: isExpired || isExpiringSoon,
-              warningText: isExpired ? 'inventory.status.expired'.tr().toUpperCase() : (isExpiringSoon ? 'inventory.status.soon'.tr().toUpperCase() : null),
               theme: theme,
             )
           else

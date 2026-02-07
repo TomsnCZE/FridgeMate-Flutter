@@ -63,8 +63,18 @@
         "clear_filters": "Filter zurücksetzen",
         "snackbar_added": "{name} wurde zum Vorrat hinzugefügt",
         "expiration": {
-            "expired": "{count} Produkte sind abgelaufen",
-            "expiring_soon": "{count} Produkte laufen bald ab"
+            "today": {
+                "one": "{count} Produkt läuft heute ab",
+                "other": "{count} Produkte laufen heute ab"
+            },
+            "expired": {
+                "one": "{count} Produkt ist abgelaufen",
+                "other": "{count} Produkte sind abgelaufen"
+            },
+            "expiring_soon": {
+                "one": "{count} Produkt läuft bald ab",
+                "other": "{count} Produkte laufen bald ab"
+            }
         },
         "empty": {
             "title": "Keine Produkte",
@@ -115,7 +125,10 @@
                 "dialog_title": "Sprache",
                 "cs": "Tschechisch",
                 "en": "Englisch",
-                "de": "Deutsch"
+                "de": "Deutsch",
+                "fr": "Französisch",
+                "es": "Spanisch",
+                "it": "Italienisch"
             }
         },
         "alerts": {
