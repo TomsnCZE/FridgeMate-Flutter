@@ -35,6 +35,24 @@
         }
     },
     "inventory": {
+        "selection": {
+            "close": "Zavřít",
+            "selected": {
+                "one": "{count} vybraná položka",
+                "few": "{count} vybrané položky",
+                "other": "{count} vybraných položek"
+            }
+        },
+        "delete_dialog": {
+            "title": "Smazat produkt?",
+            "message": {
+                "one": "Opravdu chceš smazat tento produkt?",
+                "few": "Opravdu chceš smazat {count} produkty?",
+                "other": "Opravdu chceš smazat {count} produktů?",
+                "cancel": "Zrušit",
+                "confirm": "Smazat"
+            }
+        },
         "filters": {
             "title": "Filtrovat produkty",
             "category": "Kategorie",

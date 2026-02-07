@@ -35,6 +35,22 @@
         }
     },
     "inventory": {
+        "selection": {
+            "close": "Schließen",
+            "selected": {
+                "one": "{count} ausgewählt",
+                "other": "{count} ausgewählt"
+            }
+        },
+        "delete_dialog": {
+            "title": "Produkt löschen?",
+            "message": {
+                "one": "Möchtest du dieses Produkt wirklich löschen?",
+                "other": "Möchtest du {count} Produkte wirklich löschen?",
+                "cancel": "Abbrechen",
+                "confirm": "Löschen"
+            }
+        },
         "filters": {
             "title": "Produkte filtern",
             "category": "Ort",

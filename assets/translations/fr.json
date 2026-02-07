@@ -35,6 +35,22 @@
         }
     },
     "inventory": {
+        "selection": {
+            "close": "Fermer",
+            "selected": {
+                "one": "{count} sélectionné",
+                "other": "{count} sélectionnés"
+            }
+        },
+        "delete_dialog": {
+            "title": "Supprimer le produit ?",
+            "message": {
+                "one": "Voulez-vous vraiment supprimer ce produit ?",
+                "other": "Voulez-vous vraiment supprimer {count} produits ?",
+                "cancel": "Annuler",
+                "confirm": "Supprimer"
+            }
+        },
         "filters": {
             "title": "Filtrer les produits",
             "category": "Emplacement",

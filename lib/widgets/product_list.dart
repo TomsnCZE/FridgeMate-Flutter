@@ -8,18 +8,27 @@ class ProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback onTap;
   final VoidCallback onChanged;
+  final bool isSelectionMode;
+  final bool isSelected;
+  final ValueChanged<bool>? onSelectChanged;
+  final VoidCallback? onLongPress;
 
   const ProductCard({
     super.key,
     required this.product,
     required this.onTap,
     required this.onChanged,
+    required this.isSelectionMode,
+    required this.isSelected,
+    required this.onSelectChanged,
+    this.onLongPress,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final bool showCheckbox = isSelectionMode;
     final expDate = product.expirationDate;
     final expirationStatus = _getExpirationStatus(expDate);
 
@@ -42,12 +51,22 @@ class ProductCard extends StatelessWidget {
 
     const rowHeight = 72.0;
 
-
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          // In selection mode, tapping toggles selection.
+          if (isSelectionMode && onSelectChanged != null) {
+            onSelectChanged!(!isSelected);
+            return;
+          }
+          onTap();
+        },
         onLongPress: () {
+          if (onLongPress != null) {
+            onLongPress!();
+            return;
+          }
           showModalBottomSheet(
             context: context,
             backgroundColor: Colors.transparent,
@@ -59,7 +78,14 @@ class ProductCard extends StatelessWidget {
           );
         },
         child: Ink(
-          height: rowHeight, // 🔑 pevná výška = symetrie
+          height: rowHeight,
+          // 🔑 pevná výška = symetrie
+          decoration: BoxDecoration(
+            // Subtle selection highlight
+            color: isSelected
+                ? colors.primaryContainer.withValues(alpha: 0.35)
+                : Colors.transparent,
+          ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -109,6 +135,15 @@ class ProductCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (showCheckbox) ...[
+                  const SizedBox(width: 8),
+                  Checkbox(
+                    value: isSelected,
+                    onChanged: onSelectChanged == null
+                        ? null
+                        : (v) => onSelectChanged!(v ?? false),
+                  ),
+                ],
               ],
             ),
           ),

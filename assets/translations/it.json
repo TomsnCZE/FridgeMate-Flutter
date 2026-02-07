@@ -35,6 +35,22 @@
         }
     },
     "inventory": {
+        "selection": {
+            "close": "Chiudi",
+            "selected": {
+                "one": "{count} selezionato",
+                "other": "{count} selezionati"
+            }
+        },
+        "delete_dialog": {
+            "title": "Eliminare il prodotto?",
+            "message": {
+                "one": "Vuoi davvero eliminare questo prodotto?",
+                "other": "Vuoi davvero eliminare {count} prodotti?",
+                "cancel": "Annulla",
+                "confirm": "Elimina"
+            }
+        },
         "filters": {
             "title": "Filtra prodotti",
             "category": "Posizione",
