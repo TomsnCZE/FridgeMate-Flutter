@@ -32,10 +32,8 @@ class ApiService {
             ? categoryTags.first.replaceAll(RegExp(r'^[a-z]{2}:'), '')
             : 'Neznámá';
 
-        // Složení
         final ingredients = offProduct.ingredientsText ?? 'Složení není dostupné';
 
-        // Kalorie - robustní způsob získání energie
         String calories = 'N/A';
         if (offProduct.nutriments != null) {
           try {
@@ -44,10 +42,9 @@ class ApiService {
               off.PerSize.oneHundredGrams,
             );
             if (energy != null) {
-              calories = energy.toStringAsFixed(0); // Zaokrouhlení na celé číslo
+              calories = energy.toStringAsFixed(0);
             }
           } catch (e) {
-            // Pokud getValue selže, zkusíme alternativní přístup
             print('⚠️ Nepodařilo se získat kalorie: $e');
           }
         }
@@ -81,12 +78,11 @@ class ApiService {
           },
         );
       } else {
-        return null; // Produkt nenalezen
+        return null;
       }
     } catch (e) {
       print('❌ Chyba při načítání produktu: $e');
       return null;
     }
   }
-  //kunda
 }

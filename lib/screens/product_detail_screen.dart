@@ -14,22 +14,21 @@ class ProductDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final ingredients = (product.extra?['ingredients'] as String?)?.trim().isNotEmpty == true
+    final ingredients =
+        (product.extra?['ingredients'] as String?)?.trim().isNotEmpty == true
         ? (product.extra?['ingredients'] as String).trim()
         : 'product_detail.not_provided'.tr();
 
-    final calories = (product.extra?['calories'] as String?)?.trim().isNotEmpty == true
+    final calories =
+        (product.extra?['calories'] as String?)?.trim().isNotEmpty == true
         ? (product.extra?['calories'] as String).trim()
         : 'product_detail.na'.tr();
 
     final rawType = product.extra?['type'] ?? 'food';
-    final rawLocation = product.extra?['location'] ?? product.category;
 
     final typeKey = _normalizeType(rawType);
-    final locationKey = _normalizeLocation(rawLocation);
 
     final typeText = 'add_product.$typeKey'.tr();
-    final locationText = 'add_product.$locationKey'.tr();
 
     final localImage = product.extra?['localImagePath'];
 
@@ -61,8 +60,19 @@ class ProductDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('product_detail.title'.tr()),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: theme.colorScheme.onPrimary,
+        centerTitle: false,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).colorScheme.onSurface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 2,
+        shadowColor: Colors.black.withOpacity(0.08),
+        shape: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).dividerColor.withOpacity(0.18),
+            width: 1,
+          ),
+        ),
       ),
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
@@ -84,26 +94,11 @@ class ProductDetailScreen extends StatelessWidget {
             if (product.brand != null && product.brand!.isNotEmpty)
               Text(
                 product.brand!,
-                style: TextStyle(fontSize: 16, color: theme.textTheme.bodyMedium?.color),
-              ),
-
-            const SizedBox(height: 12),
-
-            Row(
-              children: [
-                Icon(Icons.category, color: theme.colorScheme.primary),
-                const SizedBox(width: 6),
-                Text(
-                  'product_detail.category'.tr(namedArgs: {
-                    'value': locationText,
-                  }),
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: theme.colorScheme.onSurface,
-                  ),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: theme.textTheme.bodyMedium?.color,
                 ),
-              ],
-            ),
+              ),
 
             const SizedBox(height: 12),
 
@@ -112,9 +107,7 @@ class ProductDetailScreen extends StatelessWidget {
                 Icon(Icons.fastfood, color: theme.colorScheme.primary),
                 const SizedBox(width: 6),
                 Text(
-                  'product_detail.type'.tr(namedArgs: {
-                    'value': typeText,
-                  }),
+                  'product_detail.type'.tr(namedArgs: {'value': typeText}),
                   style: TextStyle(
                     fontSize: 16,
                     color: theme.colorScheme.onSurface,
@@ -127,12 +120,13 @@ class ProductDetailScreen extends StatelessWidget {
 
             Row(
               children: [
-                Icon(Icons.local_fire_department, color: theme.colorScheme.primary),
+                Icon(
+                  Icons.local_fire_department,
+                  color: theme.colorScheme.primary,
+                ),
                 const SizedBox(width: 6),
                 Text(
-                  'product_detail.calories'.tr(namedArgs: {
-                    'value': calories,
-                  }),
+                  'product_detail.calories'.tr(namedArgs: {'value': calories}),
                   style: TextStyle(
                     fontSize: 16,
                     color: theme.colorScheme.onSurface,
@@ -140,10 +134,6 @@ class ProductDetailScreen extends StatelessWidget {
                 ),
               ],
             ),
-
-
-            
-
             const SizedBox(height: 20),
 
             Text(
@@ -173,7 +163,7 @@ class ProductDetailScreen extends StatelessWidget {
                   label: Text('product_detail.add_to_inventory'.tr()),
                   onPressed: () async {
                     final productToPrefill = Product(
-                      id: null, // nový produkt
+                      id: null,
                       name: product.name,
                       brand: product.brand,
                       imageUrl: product.imageUrl,
@@ -236,34 +226,11 @@ class ProductDetailScreen extends StatelessWidget {
 
     // German values
     if (l == 'lebensmittel' || l == 'essen') return 'food';
-    if (l == 'getränk' || l == 'getraenk' || l == 'getraenke') return 'beverage';
+    if (l == 'getränk' || l == 'getraenk' || l == 'getraenke')
+      return 'beverage';
     if (l == 'sonstiges') return 'other';
 
     return 'food';
-  }
-
-  String _normalizeLocation(dynamic v) {
-    final s = (v ?? '').toString().trim();
-    if (s.isEmpty) return 'fridge';
-
-    final l = s.toLowerCase();
-
-    // already stored keys
-    if (l == 'fridge') return 'fridge';
-    if (l == 'freezer') return 'freezer';
-    if (l == 'pantry') return 'pantry';
-
-    // Czech values
-    if (l == 'lednice') return 'fridge';
-    if (l == 'mrazák' || l == 'mrazak') return 'freezer';
-    if (l == 'spíž' || l == 'spiz') return 'pantry';
-
-    // German values
-    if (l == 'kühlschrank' || l == 'kuehlschrank') return 'fridge';
-    if (l == 'gefrierschrank') return 'freezer';
-    if (l == 'speisekammer') return 'pantry';
-
-    return 'fridge';
   }
 
   String _mapApiCategory(String apiCategory) {

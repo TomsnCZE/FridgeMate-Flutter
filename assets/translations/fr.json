@@ -1,4 +1,12 @@
 {
+    "about": {
+        "title": "À propos de l'application",
+        "titlefridgemate": "Fridge Mate",
+        "version": "Version de l'application : 1.1.3",
+        "description1": "Fridge Mate est une application pour gérer l'inventaire alimentaire domestique.",
+        "description2": "Elle permet de scanner les codes-barres, de suivre les dates de péremption et de gérer les stocks.",
+        "end": "Développée avec amour en 2026."
+    },
     "home": {
         "title": "Accueil",
         "stats": {

@@ -159,7 +159,7 @@ class _AppShellState extends State<AppShell> with WidgetsBindingObserver {
       if (!mounted) return;
       setState(() => _expiredBadgeCount = expired);
     } catch (_) {
-      // ignore
+      
     }
   }
 

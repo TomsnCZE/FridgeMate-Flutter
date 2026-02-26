@@ -1,4 +1,12 @@
 {
+    "about": {
+        "title": "O aplikaci",
+        "titlefridgemate": "Fridge Mate",
+        "version": "Verze aplikace: 1.1.3",
+        "description1": "Fridge Mate je aplikace pro správu domácího inventáře potravin. ",
+        "description2": "Umožňuje skenování čárových kódů produktů, sledování jejich trvanlivosti a správu zásob.",
+        "end": "Vyvinuto s láskou v roce 2026."
+    },
     "home": {
         "title": "Domů",
         "stats": {

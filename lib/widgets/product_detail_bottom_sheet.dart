@@ -16,12 +16,15 @@ class ProductDetailBottomSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     
-    final isExpired = product.expirationDate != null &&
-        product.expirationDate!.isBefore(DateTime.now());
-    
-    final isExpiringSoon = product.expirationDate != null &&
-        product.expirationDate!.isAfter(DateTime.now()) &&
-        product.expirationDate!.difference(DateTime.now()).inDays <= 3;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    final exp = product.expirationDate;
+    final expDay = exp == null ? null : DateTime(exp.year, exp.month, exp.day);
+    final diffDays = expDay == null ? null : expDay.difference(today).inDays;
+    final isExpired = diffDays != null && diffDays < 0;
+    final isExpiresToday = diffDays != null && diffDays == 0;
+    final isExpiringSoon = diffDays != null && diffDays > 0 && diffDays <= 3;
 
     final hasImage = product.extra?['localImagePath'] != null ||
         (product.imageUrl != null && product.imageUrl!.isNotEmpty);
@@ -162,13 +165,13 @@ class ProductDetailBottomSheet extends StatelessWidget {
           const SizedBox(height: 16),
 
           // STATUS INDIKÁTOR
-          if (isExpired || isExpiringSoon)
+          if (isExpired || isExpiresToday || isExpiringSoon)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isExpired 
-                    ? colors.error.withOpacity(0.12) 
+                color: isExpired
+                    ? colors.error.withOpacity(0.12)
                     : colors.primary.withOpacity(0.12),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
@@ -184,9 +187,11 @@ class ProductDetailBottomSheet extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      isExpired 
+                      isExpired
                           ? 'product_detail.expired_banner'.tr()
-                          : 'product_detail.expiring_banner'.tr(),
+                          : isExpiresToday
+                              ? 'product_detail.expires_today_banner'.tr()
+                              : 'product_detail.expiring_banner'.tr(),
                       style: TextStyle(
                         color: isExpired ? colors.error : colors.primary,
                         fontWeight: FontWeight.w500,
@@ -328,14 +333,12 @@ class ProductDetailBottomSheet extends StatelessWidget {
       case 'Spíž':
         return 'add_product.pantry';
       default:
-        // fall back to showing category as-is, but prefer not_provided if empty
         return raw.trim().isEmpty ? 'product_detail.not_provided' : raw;
     }
   }
 }
   String _unitKeyFromRaw(String raw) {
     final v = raw.trim().toLowerCase();
-    // handle legacy + localized labels
     if (v == 'ks' || v == 'pieces' || v == 'pcs' || v == 'stk.' || v == 'stk') {
       return 'pieces';
     }
@@ -350,7 +353,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
       case 'pieces':
         return 'add_product.pieces'.tr();
       default:
-        // g/kg/ml/l are neutral abbreviations
         return unitKey;
     }
   }
@@ -359,8 +361,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
     final rawUnit = (p.extra?['unit'] ?? 'ks').toString();
     final unitKey = _unitKeyFromRaw(rawUnit);
     final unitText = _unitLabel(unitKey);
-
-    // keep it simple: show integers without .0
     final q = p.quantity;
     final qText = (q % 1 == 0) ? q.toInt().toString() : q.toString();
     return '$qText $unitText';

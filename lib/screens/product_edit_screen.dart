@@ -46,7 +46,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _type = _normalizeTypeKey(widget.product.extra?['type']);
     _expirationDate = widget.product.expirationDate;
 
-    // Prevent DropdownButtonFormField assertion: value must be one of the items.
     if (!_units.contains(_unit)) {
       _unit = _units.first;
     }
@@ -155,7 +154,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     setState(() {
       _selectedImage = null;
       _savedImagePath = null;
-      _originalImagePath = null; // user explicitly removed
+      _originalImagePath = null;
       _removeImageOnSave = true;
     });
   }
@@ -203,7 +202,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
 
     if (!mounted) return;
-    Navigator.pop(context, updatedProduct); // return updated product
+    Navigator.pop(context, updatedProduct);
   }
 
   @override
@@ -248,10 +247,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // FOTKA PRODUKTU
               _buildImageSelector(),
               const SizedBox(height: 24),
-              // NÁZEV
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -264,7 +261,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // ZNAČKA
               TextFormField(
                 controller: _brandController,
                 decoration: InputDecoration(
@@ -275,7 +271,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // MNOŽSTVÍ A JEDNOTKA
               Row(
                 children: [
                   Expanded(
@@ -318,7 +313,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // UMÍSTĚNÍ
               DropdownButtonFormField<String>(
                 value: _category,
                 decoration: InputDecoration(
@@ -333,7 +327,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // TYP PRODUKTU
               DropdownButtonFormField<String>(
                 value: _type,
                 decoration: InputDecoration(
@@ -428,7 +421,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   backgroundColor: Colors.black54,
                   radius: 20,
                   child: IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.close, color: Colors.white),
                     onPressed: _removeImage,
                   ),
                 ),
@@ -455,7 +448,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
               ),
             ],
           ),
-
       ],
     );
   }

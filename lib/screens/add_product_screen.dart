@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/product.dart';
 import '../services/database_service.dart';
 import 'package:path/path.dart' as p;
+import 'package:path/path.dart' as pth;
 import 'package:path_provider/path_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -27,7 +28,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
   String _type = 'food';
   DateTime? _expirationDate;
   File? _selectedImage;
-  String? _savedImagePath;
+  String? _savedImageName;
+  String? _docsPath;
 
   final List<String> _units = ['ks', 'g', 'kg', 'ml', 'l'];
   final List<String> _categories = ['fridge', 'freezer', 'pantry'];
@@ -36,6 +38,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   void initState() {
     super.initState();
+    getApplicationDocumentsDirectory().then((d) {
+      if (!mounted) return;
+      setState(() => _docsPath = d.path);
+    });
 
     if (widget.existingProduct != null) {
       final p = widget.existingProduct!;
@@ -47,22 +53,51 @@ class _AddProductScreenState extends State<AddProductScreen> {
       _type = (p.extra?['type'] as String?) ?? 'food';
       _expirationDate = p.expirationDate;
 
-      final imagePath = p.extra?['localImagePath'];
-      if (imagePath != null && File(imagePath).existsSync()) {
-        _selectedImage = File(imagePath);
-        _savedImagePath = imagePath;
+      final imageName = p.extra?['localImageName'] as String?;
+      final legacyPath = p.extra?['localImagePath'] as String?;
+
+      if (imageName != null) {
+        final fullPath = _buildImagePath(imageName);
+        if (File(fullPath).existsSync()) {
+          _selectedImage = File(fullPath);
+          _savedImageName = imageName;
+        }
+      } else if (legacyPath != null && File(legacyPath).existsSync()) {
+        _selectedImage = File(legacyPath);
+        _savedImageName = pth.basename(legacyPath);
       }
     } else {
       _quantityController.text = '1';
     }
   }
 
-  Future<File> _saveImagePermanently(String sourcePath) async {
+  Future<Directory> _imagesDir() async {
     final dir = await getApplicationDocumentsDirectory();
-    final fileName =
-        'product_${DateTime.now().millisecondsSinceEpoch}${p.extension(sourcePath)}';
-    final newPath = p.join(dir.path, fileName);
-    return File(sourcePath).copy(newPath);
+    final images = Directory(p.join(dir.path, 'images'));
+    if (!await images.exists()) {
+      await images.create(recursive: true);
+    }
+    return images;
+  }
+
+  String _buildImagePath(String fileName) {
+    final base = _docsPath;
+    if (base == null) return '';
+    return p.join(base, 'images', fileName);
+  }
+
+  Future<File> _saveImagePermanently(String sourcePath) async {
+    final images = await _imagesDir();
+
+    final ext = p.extension(sourcePath);
+    final safeExt = ext.isNotEmpty ? ext : '.jpg';
+    final fileName = 'product_${DateTime.now().millisecondsSinceEpoch}$safeExt';
+
+    final newPath = p.join(images.path, fileName);
+    final saved = await File(sourcePath).copy(newPath);
+
+    _savedImageName = fileName;
+    return saved;
   }
 
   Future<void> _takePhoto() async {
@@ -78,7 +113,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     setState(() {
       _selectedImage = saved;
-      _savedImagePath = saved.path;
     });
   }
 
@@ -95,14 +129,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
     setState(() {
       _selectedImage = saved;
-      _savedImagePath = saved.path;
     });
   }
 
   void _removeImage() {
     setState(() {
       _selectedImage = null;
-      _savedImagePath = null;
+      _savedImageName = null;
     });
   }
 
@@ -137,12 +170,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
       extra: {
         'unit': _unit,
         'type': _type,
-        'localImagePath': _savedImagePath,
+        'localImageName': _savedImageName,
+        'localImagePath': _selectedImage?.path,
       },
     );
 
     if (widget.existingProduct == null || widget.existingProduct!.id == null) {
-      // INSERT
       final int newId = await DatabaseService.instance.insertProduct(
         product.toMap(),
       );
@@ -216,13 +249,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 fontWeight: FontWeight.w700,
               ),
         ),
-        actions: [
-          IconButton(
-            tooltip: 'add_product.close'.tr(),
-            icon: const Icon(Icons.close),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Divider(

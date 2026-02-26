@@ -1,4 +1,12 @@
 {
+    "about": {
+        "title": "About the App",
+        "titlefridgemate": "Fridge Mate",
+        "version": "App version: 1.1.3",
+        "description1": "Fridge Mate is an app for managing household food inventory.",
+        "description2": "It allows barcode scanning of products, tracking their expiration dates, and managing supplies.",
+        "end": "Developed with love in 2026."
+    },
     "home": {
         "title": "Home",
         "stats": {

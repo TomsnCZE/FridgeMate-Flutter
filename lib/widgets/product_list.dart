@@ -4,7 +4,7 @@ import '../models/product.dart';
 import '../widgets/action_sheet.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductList extends StatelessWidget {
   final Product product;
   final VoidCallback onTap;
   final VoidCallback onChanged;
@@ -13,7 +13,7 @@ class ProductCard extends StatelessWidget {
   final ValueChanged<bool>? onSelectChanged;
   final VoidCallback? onLongPress;
 
-  const ProductCard({
+  const ProductList({
     super.key,
     required this.product,
     required this.onTap,
@@ -79,9 +79,7 @@ class ProductCard extends StatelessWidget {
         },
         child: Ink(
           height: rowHeight,
-          // 🔑 pevná výška = symetrie
           decoration: BoxDecoration(
-            // Subtle selection highlight
             color: isSelected
                 ? colors.primaryContainer.withValues(alpha: 0.35)
                 : Colors.transparent,

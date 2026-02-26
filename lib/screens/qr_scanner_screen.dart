@@ -226,7 +226,6 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             },
           ),
 
-          // Overlay se "zatemněním" + výřezem (jen zaoblený čtverec, bez rohů)
           CustomPaint(
             painter: _ScannerOverlayPainter(
               overlayColor: Colors.black.withOpacity(0.55),
@@ -237,7 +236,6 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             ),
           ),
 
-          // Scan-line (indikace běžícího skenování)
           IgnorePointer(
             child: Center(
               child: SizedBox(
@@ -280,7 +278,6 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             ),
           ),
 
-          // Horní info karta
           Positioned(
             left: 16,
             right: 16,
@@ -313,7 +310,6 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             ),
           ),
 
-          // Chip se stavem
           Positioned(
             left: 16,
             right: 16,
@@ -341,7 +337,6 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             ),
           ),
 
-          // Spodní panel: jen Start/Stop
           Positioned(
             left: 0,
             right: 0,
@@ -409,7 +404,6 @@ class _ScannerOverlayPainter extends CustomPainter {
       Radius.circular(borderRadius),
     );
 
-    // overlay s dírou
     final overlayPath = Path()..addRect(Offset.zero & size);
     final cutOutPath = Path()..addRRect(cutOutRRect);
     final finalPath =

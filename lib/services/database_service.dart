@@ -9,7 +9,7 @@ class DatabaseService {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('fridge.db');
+    _database = await _initDB('inventory.db');
     return _database!;
   }
 
@@ -19,7 +19,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 1,
       onCreate: _createDB,
     );
   }
@@ -40,25 +40,21 @@ class DatabaseService {
     ''');
   }
 
-  // INSERT -> returns inserted id
   Future<int> insertProduct(Map<String, dynamic> data) async {
     final db = await instance.database;
     return await db.insert('products', data);
   }
 
-  // GET ALL
   Future<List<Map<String, dynamic>>> getAllProducts() async {
     final db = await instance.database;
     return await db.query('products', orderBy: 'name ASC');
   }
 
-  // DELETE
   Future<int> deleteProduct(int id) async {
     final db = await instance.database;
     return await db.delete('products', where: 'id = ?', whereArgs: [id]);
   }
 
-  // UPDATE
   Future<int> updateProduct(int id, Map<String, dynamic> data) async {
     final db = await instance.database;
     return await db.update(

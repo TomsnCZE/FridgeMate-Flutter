@@ -3,14 +3,9 @@ class Product {
   final String name;
   final String? imageUrl;
   final String? brand;
-
-  // KEY: fridge/freezer/pantry
   final String category;
-
   final DateTime? expirationDate;
   final double quantity;
-
-  // extra: unit = ks/g/kg/ml/l, type = food/beverage/other
   final Map<String, dynamic>? extra;
 
   Product({

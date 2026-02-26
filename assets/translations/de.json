@@ -1,4 +1,12 @@
 {
+    "about": {
+        "title": "Über die App",
+        "titlefridgemate": "Fridge Mate",
+        "version": "App-Version: 1.1.3",
+        "description1": "Fridge Mate ist eine App zur Verwaltung des Lebensmittelbestands im Haushalt.",
+        "description2": "Sie ermöglicht das Scannen von Barcodes, die Überwachung von Haltbarkeitsdaten und die Verwaltung von Vorräten.",
+        "end": "Mit Liebe entwickelt im Jahr 2026."
+    },
     "home": {
         "title": "Start",
         "stats": {

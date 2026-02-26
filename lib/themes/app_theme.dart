@@ -2,20 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // =========================
-  // 🎨 PRESET SEED COLORS
-  // =========================
-  // Tyhle klíče si můžeš ukládat do SharedPreferences (např. "green").
   static const String seedGreen = 'green';
   static const String seedPurple = 'purple';
   static const String seedBlue = 'blue';
   static const String seedOrange = 'orange';
   static const String seedPink = 'pink';
 
-  // Default seed (když uživatel nic nezvolí)
   static const String defaultSeedKey = seedGreen;
 
-  // Map klíč -> barva (seed)
   static const Map<String, Color> presetSeeds = {
     'green': Color.fromARGB(255, 175, 180, 43),
     'blue': Color.fromARGB(255, 2, 136, 209),
@@ -24,14 +18,10 @@ class AppTheme {
     'pink': Color.fromARGB(255, 216, 27, 96)
   };
 
-  /// Vezme uložený klíč a vrátí barvu. Když klíč neexistuje, vrátí default.
   static Color seedFromKey(String? key) {
     return presetSeeds[key] ?? presetSeeds[defaultSeedKey]!;
   }
 
-  // =========================
-  // 🌞 LIGHT THEME
-  // =========================
   static ThemeData light({Color? seedColor}) {
     final seed = seedColor ?? presetSeeds[defaultSeedKey]!;
 
@@ -40,7 +30,6 @@ class AppTheme {
       brightness: Brightness.light,
     );
 
-    // držíme secondary/tertiary u primary, aby to bylo “jednobarevné”
     cs = cs.copyWith(
       secondary: cs.primary,
       onSecondary: cs.onPrimary,
@@ -145,13 +134,9 @@ class AppTheme {
 
       chipTheme: ChipThemeData(
         backgroundColor: cs.surfaceContainerHighest,
-        // barva pozadí pro selected chip
         selectedColor: cs.primaryContainer,
         secondarySelectedColor: cs.primaryContainer,
-
-        // TEXT: unselected / selected
         labelStyle: TextStyle(color: cs.onSurface),
-        // v dark theme chceme vždy bílý text, aby byl dobře čitelný
         secondaryLabelStyle: const TextStyle(color: Colors.white),
 
         checkmarkColor: Colors.white,
@@ -160,7 +145,6 @@ class AppTheme {
       ),
 
       inputDecorationTheme: InputDecorationTheme(
-        // pokud chceš “bez šedého pozadí”, změň filled na false + border na outline
         filled: true,
         fillColor: cs.surfaceContainerHighest,
         border: OutlineInputBorder(
@@ -185,9 +169,6 @@ class AppTheme {
     );
   }
 
-  // =========================
-  // 🌙 DARK THEME
-  // =========================
   static ThemeData dark({Color? seedColor}) {
     final seed = seedColor ?? presetSeeds[defaultSeedKey]!;
 

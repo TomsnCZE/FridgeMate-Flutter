@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-
 import '../models/product.dart';
 import '../services/database_service.dart';
-import '../services/settings_service.dart';
 import '../widgets/product_detail_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -35,13 +33,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
 Future<void> _load({bool force = false}) async {
     try {
-      final warningDays = await SettingsService.getExpirationWarningDays();
       final data = await DatabaseService.instance.getAllProducts();
       final products = data.map((e) => Product.fromMap(e)).toList();
 
       if (!mounted) return;
       setState(() {
-        _warningDays = warningDays;
         _products = products;
         _loading = false;
       });
@@ -107,7 +103,7 @@ Future<void> _load({bool force = false}) async {
       if (da == null && db == null) return 0;
       if (da == null) return 1;
       if (db == null) return -1;
-      return db.compareTo(da); // nejčerstvěji prošlé první
+      return db.compareTo(da);
     });
     return list;
   }

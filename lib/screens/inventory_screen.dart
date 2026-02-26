@@ -9,8 +9,7 @@ import '../widgets/action_sheet.dart';
 import '../screens/qr_scanner_screen.dart';
 import '../screens/add_product_screen.dart';
 import '../screens/product_edit_screen.dart';
-import '../routes/custom_routes.dart';
-import '../services/settings_service.dart';
+
 import '../services/database_service.dart';
 
 class InventoryScreen extends StatefulWidget {
@@ -37,7 +36,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
   void initState() {
     super.initState();
     _searchController.text = _search;
-    _loadViewMode();
     _loadProducts();
   }
 
@@ -45,13 +43,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _loadViewMode() async {
-    final mode = await SettingsService.getViewMode();
-    setState(() {
-      _viewMode = mode;
-    });
   }
 
   Future<void> _loadProducts() async {
@@ -63,11 +54,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     widget.onInventoryChanged?.call();
   }
 
-  // přidání: očekává Product jako návrat z AddProductScreen
   Future<void> _handleAddPressed() async {
     final result = await Navigator.push<Product?>(
       context,
-      SlideLeftRoute(page: const AddProductScreen()),
+      MaterialPageRoute(builder: (_) => const AddProductScreen()),
     );
 
     if (result != null) {
@@ -145,16 +135,12 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   String _selectedCountText(int count) {
     final lang = context.locale.languageCode;
-
-    // Czech needs a custom form here:
-    // 1 vybraná, 2–4 vybrané, 5+ vybraných
     if (lang == 'cs') {
       if (count == 1) return '1 vybraný';
       if (count >= 2 && count <= 4) return '$count vybrané';
       return '$count vybraných';
     }
 
-    // Other languages use normal pluralization from translations.
     return 'inventory.selection.selected'.plural(
       count,
       namedArgs: {'count': '$count'},
@@ -164,8 +150,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
   String _deleteDialogMessageText(int count) {
     final lang = context.locale.languageCode;
 
-    // Czech needs a custom form here:
-    // 1 produkt, 2–4 produkty, 5+ produktů
     if (lang == 'cs') {
       if (count == 1) return 'Opravdu chcete smazat tento produkt?';
       if (count >= 2 && count <= 4)
@@ -233,9 +217,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
 
     if (shouldDelete != true) return;
-
-    // NOTE: Adjust this to match your DatabaseService API.
-    // The goal is: delete ALL selected products, then reload.
     for (final p in _selectedProducts.toList()) {
       await DatabaseService.instance.deleteProduct(p.id!);
     }
@@ -246,7 +227,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
     _exitSelectionMode();
   }
 
-  // Optional single-item actions (only when exactly 1 item is selected)
   Product? get _singleSelected =>
       _selectedProducts.length == 1 ? _selectedProducts.first : null;
 
@@ -306,7 +286,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 ),
               ),
 
-              // Single-item actions only
               if (_selectedCount == 1) ...[
                 IconButton(
                   tooltip: 'action_sheet.edit'.tr(),
@@ -319,8 +298,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   icon: const Icon(Icons.exposure_plus_1),
                 ),
               ],
-
-              // Multi-delete available for 1..n
               IconButton(
                 tooltip: 'action_sheet.delete'.tr(),
                 onPressed: _confirmAndDeleteSelected,
@@ -334,13 +311,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  // Normalize values coming either from older Czech UI/data or from the new key-based filters.
   String _normalizeFilterKey(String raw) {
     switch (raw) {
       case 'Vše':
         return 'all';
 
-      // categories (locations)
       case 'Lednice':
         return 'fridge';
       case 'Mrazák':
@@ -348,7 +323,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
       case 'Spíž':
         return 'pantry';
 
-      // types
       case 'Jídlo':
         return 'food';
       case 'Pití':
@@ -368,7 +342,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
         return 'expired';
 
       default:
-        return raw; // already a key (all/fridge/...), or unknown
+        return raw;
     }
   }
 
@@ -381,11 +355,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
     return _normalizeFilterKey(raw);
   }
 
-  // Returns one of: fresh | soon | today | expired
   String _expirationStatus(Product p, {int soonDays = 3}) {
     final d = p.expirationDate;
     if (d == null) {
-      // No expiration date => treat as fresh
       return 'fresh';
     }
 
@@ -406,8 +378,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
     final selExpiration = _normalizeFilterKey(_filterExpiration);
 
     return _products.where((p) {
-      final matchesSearch =
-          p.name.toLowerCase().contains(_search.toLowerCase());
+      final matchesSearch = p.name.toLowerCase().contains(
+        _search.toLowerCase(),
+      );
 
       final pCategory = _normalizeProductCategory(p);
       final matchesCategory = selCategory == 'all' || pCategory == selCategory;
@@ -418,7 +391,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
       final matchesExpiration =
           selExpiration == 'all' || _expirationStatus(p) == selExpiration;
 
-      return matchesSearch && matchesCategory && matchesType && matchesExpiration;
+      return matchesSearch &&
+          matchesCategory &&
+          matchesType &&
+          matchesExpiration;
     }).toList();
   }
 
@@ -462,7 +438,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   String _trFilterLabel(String raw) {
-    // Handle already-localized Czech labels coming from older data/UI
     const csToKey = {
       'Jídlo': 'food',
       'Pití': 'beverage',
@@ -480,7 +455,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
     final key = csToKey[raw] ?? raw;
 
-    // add_product.* keys
     const addProductKeys = {
       'food',
       'beverage',
@@ -493,14 +467,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     if (addProductKeys.contains(key)) {
       return 'add_product.$key'.tr();
     }
-
-    // inventory.status.* keys
     const statusKeys = {'expired', 'today', 'soon', 'fresh'};
     if (statusKeys.contains(key)) {
       return 'inventory.status.$key'.tr();
     }
-
-    // Fall back (already a readable label)
     return raw;
   }
 
@@ -530,7 +500,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }) {
     final lang = context.locale.languageCode;
 
-    // Priority: expired > today > soon
     if (expired > 0) {
       if (lang == 'cs') {
         if (expired == 1) return '1 produkt prošel expirací';
@@ -556,8 +525,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
         namedArgs: {'count': '$today'},
       );
     }
-
-    // soon > 0
     if (lang == 'cs') {
       if (soon == 1) return '1 produkt brzy expiruje';
       if (soon >= 2 && soon <= 4) return '$soon produkty brzy expirují';
@@ -576,10 +543,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     final filtered = filteredProducts;
-final hasActiveFilters =
-    _normalizeFilterKey(_filterCategory) != 'all' ||
-    _normalizeFilterKey(_filterType) != 'all' ||
-    _normalizeFilterKey(_filterExpiration) != 'all';
+    final hasActiveFilters =
+        _normalizeFilterKey(_filterCategory) != 'all' ||
+        _normalizeFilterKey(_filterType) != 'all' ||
+        _normalizeFilterKey(_filterExpiration) != 'all';
 
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -619,7 +586,6 @@ final hasActiveFilters =
           children: [
             _isSelectionMode ? _buildSelectionBar(theme) : _buildTopBar(theme),
 
-            // INDIKÁTOR AKTIVNÍCH FILTRŮ
             if (hasActiveFilters)
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -672,7 +638,6 @@ final hasActiveFilters =
                 ),
               ),
 
-            // UPOZORNĚNÍ NA EXPIRACI
             if (expiredCount > 0 || todayCount > 0 || expiringSoonCount > 0)
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -747,7 +712,7 @@ final hasActiveFilters =
                         final p = filtered[i];
                         final isSelected = _selectedProducts.contains(p);
 
-                        return ProductCard(
+                        return ProductList(
                           product: p,
                           onTap: () => _showProductDetail(p),
                           onChanged: _loadProducts,
