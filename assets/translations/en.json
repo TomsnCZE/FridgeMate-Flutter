@@ -243,6 +243,7 @@
         "calories_value": "{value} kcal/100g",
         "expired_banner": "This product has expired!",
         "expiring_banner": "This product is expiring soon!",
+        "expires_today_banner": "This product expires today!",
         "no_photo": "No photo"
     },
     "action_sheet": {

@@ -233,6 +233,7 @@
         "calories_value": "{value} kcal/100g",
         "expired_banner": "Produkt prošel expirací!",
         "expiring_banner": "Produkt brzy expiruje!",
+        "expires_today_banner": "Produkt expiruje dnes!",
         "no_photo": "Žádná fotka"
     },
     "action_sheet": {

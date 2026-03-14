@@ -243,6 +243,7 @@
         "calories_value": "{value} kcal/100g",
         "expired_banner": "¡Este producto ha caducado!",
         "expiring_banner": "¡Este producto está a punto de caducar!",
+        "expires_today_banner": "¡Este producto caduca hoy!",
         "no_photo": "Sin foto"
     },
     "action_sheet": {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -51,14 +50,6 @@ class AboutScreen extends StatelessWidget {
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
-            ),
-            Center(
-              child: SvgPicture.asset(
-                'assets/images/heart.svg',
-                alignment: Alignment.topCenter,
-                width: 120,
-                height: 120,
-              ),
             ),
             const SizedBox(height: 16),
           ],
