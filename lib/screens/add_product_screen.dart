@@ -191,7 +191,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       );
       Navigator.pop(context, savedProduct);
     } else {
-      // UPDATE
+      // update
       await DatabaseService.instance.updateProduct(
         widget.existingProduct!.id!,
         product.toMap(),

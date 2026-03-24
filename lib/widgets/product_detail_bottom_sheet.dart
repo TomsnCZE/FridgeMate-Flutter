@@ -45,7 +45,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header s tlačítkem zavřít
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -66,7 +65,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // FOTKA PRODUKTU
           Center(
             child: Container(
               width: 120,
@@ -97,7 +95,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // NÁZEV PRODUKTU
           Center(
             child: Text(
               product.name,
@@ -110,7 +107,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
             ),
           ),
 
-          // ZNAČKA
           if (product.brand != null && product.brand!.isNotEmpty)
             Center(
               child: Text(
@@ -138,7 +134,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
             theme: theme,
           ),
 
-          // DATUM SPOTŘEBY
           if (product.expirationDate != null)
             _buildInfoSection(
               icon: Icons.calendar_today,
@@ -154,7 +149,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
               theme: theme,
             ),
 
-          // MNOŽSTVÍ
           _buildInfoSection(
             icon: Icons.scale,
             title: 'add_product.quantity'.tr(),
@@ -164,7 +158,6 @@ class ProductDetailBottomSheet extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // STATUS INDIKÁTOR
           if (isExpired || isExpiresToday || isExpiringSoon)
             Container(
               width: double.infinity,

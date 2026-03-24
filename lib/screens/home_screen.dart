@@ -301,20 +301,16 @@ class _SectionCard extends StatelessWidget {
 String _normalizeCategoryKey(dynamic raw) {
   final v = (raw ?? '').toString().trim();
 
-  // already a key
   if (v == 'fridge' || v == 'freezer' || v == 'pantry') return v;
 
-  // CZ legacy
   if (v == 'Lednice') return 'fridge';
   if (v == 'Mrazák' || v == 'Mrazak') return 'freezer';
   if (v == 'Spíž' || v == 'Spiz') return 'pantry';
 
-  // EN legacy
   if (v == 'Fridge') return 'fridge';
   if (v == 'Freezer') return 'freezer';
   if (v == 'Pantry') return 'pantry';
 
-  // DE legacy
   if (v == 'Kühlschrank' || v == 'Kuehlschrank') return 'fridge';
   if (v == 'Gefrierschrank') return 'freezer';
   if (v == 'Vorratskammer' || v == 'Speisekammer') return 'pantry';

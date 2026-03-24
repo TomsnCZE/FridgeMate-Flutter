@@ -2,10 +2,10 @@ import 'package:openfoodfacts/openfoodfacts.dart' as off;
 import '../models/product.dart';
 
 class ApiService {
-  /// Vyhledá produkt podle čárového / QR kódu
+  /// vyhleda produkt podle caroveho kodu
   Future<Product?> fetchProductByBarcode(String barcode) async {
     try {
-      // Konfigurace dotazu
+      // konfigurace dotazu
       final configuration = off.ProductQueryConfiguration(
         barcode,
         version: off.ProductQueryVersion.v3,
@@ -13,20 +13,20 @@ class ApiService {
         fields: [off.ProductField.ALL],
       );
 
-      // Zavolání API
+      // zavolani API
       final result = await off.OpenFoodAPIClient.getProductV3(configuration);
 
-      // Kontrola, zda byl produkt nalezen
+      // kontrola jestli byl produkt nalezen
       if (result.status == off.ProductResultV3.statusSuccess && 
           result.product != null) {
         final offProduct = result.product!;
 
-        // Získání základních informací
+        // ziskani zakl. informaci
         final name = offProduct.productName ?? 'Neznámý produkt';
         final brand = offProduct.brands ?? '';
         final imageUrl = offProduct.imageFrontUrl ?? '';
 
-        // Kategorie
+        // kategorie
         final categoryTags = offProduct.categoriesTags ?? [];
         final category = categoryTags.isNotEmpty
             ? categoryTags.first.replaceAll(RegExp(r'^[a-z]{2}:'), '')
@@ -45,7 +45,7 @@ class ApiService {
               calories = energy.toStringAsFixed(0);
             }
           } catch (e) {
-            print('⚠️ Nepodařilo se získat kalorie: $e');
+            print('Nepodařilo se získat kalorie: $e');
           }
         }
 
@@ -81,7 +81,7 @@ class ApiService {
         return null;
       }
     } catch (e) {
-      print('❌ Chyba při načítání produktu: $e');
+      print('Chyba při načítání produktu: $e');
       return null;
     }
   }

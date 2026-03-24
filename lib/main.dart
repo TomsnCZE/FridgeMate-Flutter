@@ -14,7 +14,6 @@ import 'themes/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Android only: keep the top status bar, hide only the bottom system navigation bar.
   if (Platform.isAndroid) {
     SystemChrome.setEnabledSystemUIMode(
       SystemUiMode.manual,

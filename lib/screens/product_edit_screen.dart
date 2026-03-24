@@ -125,7 +125,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         });
       }
     } catch (e) {
-      print('❌ Chyba při focení: $e');
+      print('Chyba při focení: $e');
     }
   }
 
@@ -146,7 +146,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         });
       }
     } catch (e) {
-      print('❌ Chyba při výběru z galerie: $e');
+      print('Chyba při výběru z galerie: $e');
     }
   }
 
@@ -193,7 +193,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
       },
     );
 
-    // UPDATE in DB
     if (widget.product.id != null) {
       await DatabaseService.instance.updateProduct(
         widget.product.id!,
@@ -341,7 +340,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // DATUM SPOTŘEBY
               InkWell(
                 onTap: _selectDate,
                 child: InputDecorator(
@@ -365,7 +363,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
               ),
               const SizedBox(height: 32),
 
-              // TLAČÍTKA
               Row(
                 children: [
                   Expanded(

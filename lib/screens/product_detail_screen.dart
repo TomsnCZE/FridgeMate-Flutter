@@ -214,17 +214,14 @@ class ProductDetailScreen extends StatelessWidget {
 
     final l = s.toLowerCase();
 
-    // already stored keys
     if (l == 'food') return 'food';
     if (l == 'beverage' || l == 'drink') return 'beverage';
     if (l == 'other') return 'other';
 
-    // Czech values
     if (l == 'jídlo' || l == 'jidlo') return 'food';
     if (l == 'pití' || l == 'piti') return 'beverage';
     if (l == 'ostatní' || l == 'ostatni') return 'other';
 
-    // German values
     if (l == 'lebensmittel' || l == 'essen') return 'food';
     if (l == 'getränk' || l == 'getraenk' || l == 'getraenke')
       return 'beverage';

@@ -163,13 +163,9 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
       case 'pieces':
         return 'add_product.pieces'.tr(); // cs: ks, en: pcs, de: Stk.
       default:
-        return unitKey; // g/kg/ml/l are neutral abbreviations
+        return unitKey;
     }
   }
-  // Removed: bool _isAdd = false; // default: Odebrat
-  // Removed: double _delta = 0;
-  // Removed: late final TextEditingController _deltaController;
-  // Keep _step
   double _step = 1;
 
   double _current = 0;
@@ -273,10 +269,8 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
     _holdDir = direction;
     _holdMs = 220;
 
-    // okamžitě aplikuj 1 krok
     _applyStep(direction);
 
-    // pak se opakovaně zrychluj
     _scheduleNextHoldTick();
   }
 
@@ -284,13 +278,11 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
     _holdTimer = Timer(Duration(milliseconds: _holdMs), () {
       _applyStep(_holdDir);
 
-      // zrychlení – postupně zkracuj interval, ale drž minimální limit
       if (_holdMs > 60) {
         _holdMs = (_holdMs * 0.85).round();
         if (_holdMs < 60) _holdMs = 60;
       }
 
-      // pokračuj, dokud držíme
       _scheduleNextHoldTick();
     });
   }
@@ -376,7 +368,6 @@ class _QuantityAdjustDialogState extends State<QuantityAdjustDialog>
 
           const SizedBox(height: 14),
 
-          // Krok (dropdown bez shadow + animovaná šipka)
           Container(
             height: 44,
             padding: const EdgeInsets.symmetric(horizontal: 12),

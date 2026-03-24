@@ -86,7 +86,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
           const SizedBox(height: 20),
 
-          // FILTR PODLE KATEGORIE
+          // filtr podle kat.
           _buildFilterSection(
             title: 'inventory.filters.category'.tr(),
             options: _categories,
@@ -97,7 +97,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
           const SizedBox(height: 16),
 
-          // FILTR PODLE TYPU
+          // filtr podle typu
           _buildFilterSection(
             title: 'inventory.filters.type'.tr(),
             options: _types,
@@ -108,7 +108,7 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
           const SizedBox(height: 16),
 
-          // FILTR PODLE EXPIRACE
+          // flitr podle exp. data
           _buildFilterSection(
             title: 'inventory.filters.expiration'.tr(),
             options: _expirations,
@@ -119,7 +119,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
 
           const SizedBox(height: 24),
 
-          // TLAČÍTKA
           Row(
             children: [
               Expanded(
@@ -164,7 +163,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       case 'all':
         return 'common.all';
 
-      // categories (locations)
       case 'fridge':
         return 'add_product.fridge';
       case 'freezer':
@@ -172,7 +170,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       case 'pantry':
         return 'add_product.pantry';
 
-      // types
       case 'food':
         return 'add_product.food';
       case 'beverage':
@@ -180,7 +177,6 @@ class _FilterBottomSheetState extends State<FilterBottomSheet> {
       case 'other':
         return 'add_product.other';
 
-      // expiration filters
       case 'fresh':
         return 'inventory.filters.expiration_fresh';
       case 'soon':
