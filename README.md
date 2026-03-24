@@ -30,7 +30,7 @@
 
 1.  **Clone the repository**:
     ```bash
-    git clone [https://github.com/TomsnCZE/FridgeMate-Flutter.git](https://github.com/TomsnCZE/FridgeMate-Flutter.git)
+    git clone https://github.com/TomsnCZE/FridgeMate-Flutter.git 
     cd FridgeMate-Flutter
     ```
 
